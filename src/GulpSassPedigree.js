@@ -39,15 +39,13 @@ function sassPedigreeGetAncestors(file, enc, cb) {
     ancestors
       .forEach(p => {
         this.push(
-          new gutil.File(
-            {
-              cwd: file.cwd,
-              path: p,
-              base: path.dirname(p),
-              contents: file.type === 'stream' ?
-                fs.createReadStream(p) : fs.readFileSync(p)
-            }
-          )
+          new gutil.File({
+            cwd: file.cwd,
+            path: p,
+            base: path.dirname(p),
+            contents: file.type === 'stream' ?
+              fs.createReadStream(p) : fs.readFileSync(p)
+          })
         );
       })
     ;
