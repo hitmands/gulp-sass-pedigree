@@ -2,6 +2,8 @@
 Incremental Caching System for Gulp and NodeSass
 
 ## Getting Started
+https://www.npmjs.com/package/gulp-sass-pedigree
+
 `npm install --save-dev gulp-sass-pedigree`
 
 ## gulpfile
