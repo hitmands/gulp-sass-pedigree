@@ -1,6 +1,6 @@
 /**!
  ** @name gulp-sass-pedigree
- ** @version 1.0.2
+ ** @version 1.0.3
  ** @author Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)
  ** @url https://github.com/hitmands/gulp-sass-pedigree#readme
  ** @description Incremental Caching System for Gulp and NodeSass
@@ -126,14 +126,19 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var graph = new _DependenciesGraph.DependenciesGraph();
 
 function sassPedigreeStudy(file, enc, cb) {
-
-  void graph.onFileChange(file, file.contents.toString(), _path2.default.dirname(file.path));
+  if (!file.isNull()) {
+    void graph.onFileChange(file, file.contents.toString(), file.base);
+  }
 
   return cb(null, file);
 }
 
 function sassPedigreeGetAncestors(file, enc, cb) {
-  void graph.onFileChange(file, file.contents.toString(), _path2.default.dirname(file.path));
+  if (file.isNull()) {
+    return cb(null, file);
+  }
+
+  void graph.onFileChange(file, file.contents.toString(), file.base);
 
   var parents = graph.get(file.path).parents.slice();
 

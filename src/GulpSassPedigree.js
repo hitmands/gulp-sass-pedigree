@@ -8,22 +8,27 @@ import {DependenciesGraph} from './DependenciesGraph';
 const graph = new DependenciesGraph();
 
 function sassPedigreeStudy(file, enc, cb) {
-
-  void graph.onFileChange(
-    file,
-    file.contents.toString(),
-    path.dirname(file.path)
-  );
+  if(!file.isNull()) {
+    void graph.onFileChange(
+      file,
+      file.contents.toString(),
+      file.base
+    );
+  }
 
   return cb(null, file);
 }
 
 
 function sassPedigreeGetAncestors(file, enc, cb) {
+  if(file.isNull()) {
+    return cb(null, file);
+  }
+
   void graph.onFileChange(
     file,
     file.contents.toString(),
-    path.dirname(file.path)
+    file.base
   );
 
   let parents = graph.get(file.path).parents.slice();
