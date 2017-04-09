@@ -24,7 +24,7 @@
     "type": "git",
     "url": "git+https://github.com/hitmands/gulp-sass-pedigree.git"
   },
-  "keywords": ["sass", "libsass", "gulp", "cache", "incremental cache"],
+  "keywords": ["gulpplugin", "sass", "libsass", "gulp", "cache", "incremental cache"],
   "author": "Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)",
   "license": "ISC",
   "bugs": {
