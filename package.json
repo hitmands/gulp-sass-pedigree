@@ -1,6 +1,6 @@
 {
   "name": "gulp-sass-pedigree",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Incremental Caching System for Gulp and NodeSass",
   "main": "index.js",
   "devDependencies": {
@@ -24,8 +24,8 @@
     "type": "git",
     "url": "git+https://github.com/hitmands/gulp-sass-pedigree.git"
   },
-  "keywords": [],
-  "author": "Giuseppe Mandato <gius.mand.developer@gmail.com>",
+  "keywords": ["sass", "libsass", "gulp", "cache", "incremental cache"],
+  "author": "Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/hitmands/gulp-sass-pedigree/issues"
