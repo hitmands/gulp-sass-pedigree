@@ -58,21 +58,19 @@ export class DependenciesGraph {
 
   updateParents() {
     for(let k in this.cache) {
-      if(Object.prototype.hasOwnProperty.call(this.cache, k)) {
-        this.cache[k].parents = [];
-      }
+      //noinspection JSUnfilteredForInLoop
+      this.cache[k].parents = [];
     }
 
     for(let k in this.cache) {
-      if(!Object.prototype.hasOwnProperty.call(this.cache, k)) {
-        continue;
-      }
-
+      //noinspection JSUnfilteredForInLoop
       this.cache[k]
         .children
         .forEach(file => {
 
+          //noinspection JSUnfilteredForInLoop
           if(!~this.cache[file].parents.indexOf(k)) {
+            //noinspection JSUnfilteredForInLoop
             this.cache[file].parents.push(k);
           }
         })
@@ -85,14 +83,7 @@ export class DependenciesGraph {
     return files
       .map(filename => {
         let a = path.resolve(dir, filename);
-
         if(a in this.cache) {
-
-          return a;
-        }
-
-        if(fs.existsSync(a)) {
-          this.cache[a] = DependenciesGraph.createStack();
 
           return a;
         }
@@ -101,6 +92,12 @@ export class DependenciesGraph {
         if(b in this.cache) {
 
           return b;
+        }
+
+        if(fs.existsSync(a)) {
+          this.cache[a] = DependenciesGraph.createStack();
+
+          return a;
         }
 
         if(fs.existsSync(b)) {

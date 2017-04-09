@@ -1,12 +1,12 @@
 /**!
  ** @name gulp-sass-pedigree
- ** @version 1.0.6
+ ** @version 1.0.7
  ** @author Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)
  ** @url https://github.com/hitmands/gulp-sass-pedigree#readme
  ** @description Incremental Caching System for Gulp and NodeSass
  ** @keywords [gulpplugin, sass, libsass, gulp, cache, incremental cache]
  ** @entry build/GulpSassPedigree.js
- ** @license ISC
+ ** @license MIT License
 ***/
 
 module.exports =
@@ -257,28 +257,24 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
       var _this = this;
 
       for (var k in this.cache) {
-        if (Object.prototype.hasOwnProperty.call(this.cache, k)) {
-          this.cache[k].parents = [];
-        }
+        //noinspection JSUnfilteredForInLoop
+        this.cache[k].parents = [];
       }
 
       var _loop = function _loop(_k) {
-        if (!Object.prototype.hasOwnProperty.call(_this.cache, _k)) {
-          return 'continue';
-        }
-
+        //noinspection JSUnfilteredForInLoop
         _this.cache[_k].children.forEach(function (file) {
 
+          //noinspection JSUnfilteredForInLoop
           if (!~_this.cache[file].parents.indexOf(_k)) {
+            //noinspection JSUnfilteredForInLoop
             _this.cache[file].parents.push(_k);
           }
         });
       };
 
       for (var _k in this.cache) {
-        var _ret = _loop(_k);
-
-        if (_ret === 'continue') continue;
+        _loop(_k);
       }
     }
   }, {
@@ -288,14 +284,7 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
 
       return files.map(function (filename) {
         var a = _path2.default.resolve(dir, filename);
-
         if (a in _this2.cache) {
-
-          return a;
-        }
-
-        if (_fs2.default.existsSync(a)) {
-          _this2.cache[a] = DependenciesGraph.createStack();
 
           return a;
         }
@@ -304,6 +293,12 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
         if (b in _this2.cache) {
 
           return b;
+        }
+
+        if (_fs2.default.existsSync(a)) {
+          _this2.cache[a] = DependenciesGraph.createStack();
+
+          return a;
         }
 
         if (_fs2.default.existsSync(b)) {
