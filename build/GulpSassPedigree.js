@@ -1,6 +1,6 @@
 /**!
  ** @name gulp-sass-pedigree
- ** @version 1.0.4
+ ** @version 1.0.5
  ** @author Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)
  ** @url https://github.com/hitmands/gulp-sass-pedigree#readme
  ** @description Incremental Caching System for Gulp and NodeSass
@@ -144,22 +144,20 @@ function sassPedigreeGetAncestors(file, enc, cb) {
 
   var parents = graph.get(file.path).parents;
 
-  if (!parents.length) {
-    return cb(null, file);
+  if (parents.length) {
+    var ancestors = graph.ascend(parents.slice());
+
+    ancestors.forEach(function (p) {
+      _this.push(new _gulpUtil2.default.File({
+        cwd: file.cwd,
+        path: p,
+        base: _path2.default.dirname(p),
+        contents: file.type === 'stream' ? _fs2.default.createReadStream(p) : _fs2.default.readFileSync(p)
+      }));
+    });
   }
 
-  var ancestors = graph.ascend(parents.slice());
-
-  ancestors.forEach(function (p) {
-    _this.push(new _gulpUtil2.default.File({
-      cwd: file.cwd,
-      path: p,
-      base: _path2.default.dirname(p),
-      contents: file.type === 'stream' ? _fs2.default.createReadStream(p) : _fs2.default.readFileSync(p)
-    }));
-  });
-
-  return cb();
+  return cb(null, file);
 }
 
 function createPedigree() {
@@ -203,6 +201,7 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
   _createClass(DependenciesGraph, null, [{
     key: 'createStack',
     value: function createStack() {
+
       return Object.assign(Object.create(null), { children: [], parents: [] });
     }
   }, {
@@ -222,6 +221,7 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
   _createClass(DependenciesGraph, [{
     key: 'get',
     value: function get(path) {
+
       return this.cache[path];
     }
   }, {
@@ -312,6 +312,12 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
           return b;
         }
       }, []);
+    }
+  }, {
+    key: 'length',
+    get: function get() {
+
+      return Object.keys(this.cache).length;
     }
   }]);
 

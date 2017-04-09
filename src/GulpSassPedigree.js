@@ -33,31 +33,27 @@ function sassPedigreeGetAncestors(file, enc, cb) {
 
   let parents = graph.get(file.path).parents;
 
-  if(!parents.length) {
-    return cb(null, file);
+  if(parents.length) {
+    let ancestors = graph.ascend(parents.slice());
+
+    ancestors
+      .forEach(p => {
+        this.push(
+          new gutil.File(
+            {
+              cwd: file.cwd,
+              path: p,
+              base: path.dirname(p),
+              contents: file.type === 'stream' ?
+                fs.createReadStream(p) : fs.readFileSync(p)
+            }
+          )
+        )
+      })
+    ;
   }
 
-  let ancestors = graph.ascend(parents.slice());
-
-  ancestors
-    .forEach(p => {
-      this.push(
-
-        new gutil.File(
-          {
-            cwd: file.cwd,
-            path: p,
-            base: path.dirname(p),
-            contents: file.type === 'stream' ?
-              fs.createReadStream(p) : fs.readFileSync(p)
-          }
-        )
-
-      )
-    })
-  ;
-
-  return cb();
+  return cb(null, file);
 }
 
 export function createPedigree() {

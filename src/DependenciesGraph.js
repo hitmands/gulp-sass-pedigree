@@ -5,6 +5,7 @@ import {stripScssImports} from './stripScssImports';
 
 export class DependenciesGraph {
   static createStack() {
+
     return Object.assign(Object.create(null), {children: [], parents: []});
   }
 
@@ -17,7 +18,13 @@ export class DependenciesGraph {
     this.cache = Object.create(null);
   }
 
+  get length() {
+
+    return Object.keys(this.cache).length;
+  }
+
   get(path) {
+
     return this.cache[path];
   }
 
