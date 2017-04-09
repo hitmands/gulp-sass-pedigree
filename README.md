@@ -1,9 +1,11 @@
 # gulp-sass-pedigree
 Incremental Caching System for Gulp and NodeSass
 
-## Getting Started
-https://www.npmjs.com/package/gulp-sass-pedigree
+## Where
+ - https://github.com/hitmands/gulp-sass-pedigree
+ - https://www.npmjs.com/package/gulp-sass-pedigree
 
+## Getting Started
 `npm install --save-dev gulp-sass-pedigree`
 
 ## gulpfile
@@ -14,6 +16,7 @@ const sass = require('gulp-sass');
 const {createPedigree, getAncestors} = require('gulp-sass-pedigree');
 
 gulp.task('sass:all', () => {
+
   return gulp
     .src('path/to/**/*.scss')
     .pipe(createPedigree())
