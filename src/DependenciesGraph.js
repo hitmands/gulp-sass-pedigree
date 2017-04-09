@@ -21,7 +21,7 @@ export class DependenciesGraph {
     return this.cache[path];
   }
 
-  getParents(list, res = []) {
+  ascend(list, res = []) {
     if(!list.length) {
       return prune(res);
     }
@@ -30,8 +30,8 @@ export class DependenciesGraph {
     let dep = this.cache[p];
 
     return dep.parents.length ?
-      this.getParents(list.concat(dep.parents), res) :
-      this.getParents(list, res.concat(p))
+      this.ascend(list.concat(dep.parents), res) :
+      this.ascend(list, res.concat(p))
       ;
   }
 

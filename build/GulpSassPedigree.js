@@ -1,6 +1,6 @@
 /**!
  ** @name gulp-sass-pedigree
- ** @version 1.0.3
+ ** @version 1.0.4
  ** @author Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)
  ** @url https://github.com/hitmands/gulp-sass-pedigree#readme
  ** @description Incremental Caching System for Gulp and NodeSass
@@ -126,7 +126,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var graph = new _DependenciesGraph.DependenciesGraph();
 
 function sassPedigreeStudy(file, enc, cb) {
-  if (!file.isNull()) {
+  if (file && !file.isNull()) {
     void graph.onFileChange(file, file.contents.toString(), file.base);
   }
 
@@ -134,26 +134,30 @@ function sassPedigreeStudy(file, enc, cb) {
 }
 
 function sassPedigreeGetAncestors(file, enc, cb) {
-  if (file.isNull()) {
+  var _this = this;
+
+  if (!file || file.isNull()) {
     return cb(null, file);
   }
 
   void graph.onFileChange(file, file.contents.toString(), file.base);
 
-  var parents = graph.get(file.path).parents.slice();
+  var parents = graph.get(file.path).parents;
 
   if (!parents.length) {
     return cb(null, file);
   }
 
-  this.push.apply(this, graph.getParents(parents).map(function (p) {
-    return new _gulpUtil2.default.File({
+  var ancestors = graph.ascend(parents.slice());
+
+  ancestors.forEach(function (p) {
+    _this.push(new _gulpUtil2.default.File({
       cwd: file.cwd,
       path: p,
       base: _path2.default.dirname(p),
       contents: file.type === 'stream' ? _fs2.default.createReadStream(p) : _fs2.default.readFileSync(p)
-    });
-  }));
+    }));
+  });
 
   return cb();
 }
@@ -221,8 +225,8 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
       return this.cache[path];
     }
   }, {
-    key: 'getParents',
-    value: function getParents(list) {
+    key: 'ascend',
+    value: function ascend(list) {
       var res = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
 
       if (!list.length) {
@@ -232,7 +236,7 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
       var p = list.shift();
       var dep = this.cache[p];
 
-      return dep.parents.length ? this.getParents(list.concat(dep.parents), res) : this.getParents(list, res.concat(p));
+      return dep.parents.length ? this.ascend(list.concat(dep.parents), res) : this.ascend(list, res.concat(p));
     }
   }, {
     key: 'onFileChange',

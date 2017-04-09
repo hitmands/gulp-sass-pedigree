@@ -8,7 +8,7 @@ import {DependenciesGraph} from './DependenciesGraph';
 const graph = new DependenciesGraph();
 
 function sassPedigreeStudy(file, enc, cb) {
-  if(!file.isNull()) {
+  if(file && !file.isNull()) {
     void graph.onFileChange(
       file,
       file.contents.toString(),
@@ -21,7 +21,7 @@ function sassPedigreeStudy(file, enc, cb) {
 
 
 function sassPedigreeGetAncestors(file, enc, cb) {
-  if(file.isNull()) {
+  if(!file || file.isNull()) {
     return cb(null, file);
   }
 
@@ -31,18 +31,19 @@ function sassPedigreeGetAncestors(file, enc, cb) {
     file.base
   );
 
-  let parents = graph.get(file.path).parents.slice();
+  let parents = graph.get(file.path).parents;
 
   if(!parents.length) {
     return cb(null, file);
   }
 
-  this.push.apply(
-    this, graph
-      .getParents(parents)
-      .map(
-        p =>  new gutil.File(
+  let ancestors = graph.ascend(parents.slice());
 
+  ancestors
+    .forEach(p => {
+      this.push(
+
+        new gutil.File(
           {
             cwd: file.cwd,
             path: p,
@@ -50,10 +51,11 @@ function sassPedigreeGetAncestors(file, enc, cb) {
             contents: file.type === 'stream' ?
               fs.createReadStream(p) : fs.readFileSync(p)
           }
-
         )
-    )
-  );
+
+      )
+    })
+  ;
 
   return cb();
 }
