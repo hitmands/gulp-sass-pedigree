@@ -73,7 +73,7 @@ export class DependenciesGraph {
         .forEach(file => {
 
           if(!~this.cache[file].parents.indexOf(k)) {
-            this.cache[file].parents.push(k)
+            this.cache[file].parents.push(k);
           }
         })
       ;

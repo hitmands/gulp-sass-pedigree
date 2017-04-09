@@ -48,7 +48,7 @@ function sassPedigreeGetAncestors(file, enc, cb) {
                 fs.createReadStream(p) : fs.readFileSync(p)
             }
           )
-        )
+        );
       })
     ;
   }
