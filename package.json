@@ -18,8 +18,7 @@
     "gulp-util": "latest"
   },
   "scripts": {
-    "webpack" : "webpack --config webpack.config.js",
-    "build": "npm run webpack"
+    "webpack" : "webpack --config webpack.config.js"
   },
   "repository": {
     "type": "git",
