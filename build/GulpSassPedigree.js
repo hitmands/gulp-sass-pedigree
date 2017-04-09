@@ -1,10 +1,10 @@
 /**!
  ** @name gulp-sass-pedigree
- ** @version 1.0.5
+ ** @version 1.0.6
  ** @author Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)
  ** @url https://github.com/hitmands/gulp-sass-pedigree#readme
  ** @description Incremental Caching System for Gulp and NodeSass
- ** @keywords [sass, libsass, gulp, cache, incremental cache]
+ ** @keywords [gulpplugin, sass, libsass, gulp, cache, incremental cache]
  ** @entry build/GulpSassPedigree.js
  ** @license ISC
 ***/
