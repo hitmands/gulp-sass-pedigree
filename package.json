@@ -26,7 +26,7 @@
   },
   "keywords": ["gulpplugin", "sass", "libsass", "gulp", "cache", "incremental cache"],
   "author": "Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)",
-  "license": "ISC",
+  "license": "MIT License",
   "bugs": {
     "url": "https://github.com/hitmands/gulp-sass-pedigree/issues"
   },
