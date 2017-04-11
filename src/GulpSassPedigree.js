@@ -20,7 +20,10 @@ function sassPedigreeStudy(file, enc, cb) {
     void graph.onFileChange(
       file,
       file.contents.toString(),
-      file.base
+      [
+        path.dirname(file.path),
+        file.base
+      ]
     );
   }
 
@@ -38,7 +41,10 @@ function sassPedigreeGetAncestors(file, enc, cb) {
   void graph.onFileChange(
     file,
     file.contents.toString(),
-    file.base
+    [
+      path.dirname(file.path),
+      file.base
+    ]
   );
 
   let parents = graph.get(file.path).parents;

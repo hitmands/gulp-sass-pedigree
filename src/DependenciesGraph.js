@@ -80,32 +80,36 @@ export class DependenciesGraph {
 
 
 
-  updateKeys(files, dir) {
+  updateKeys(files, dirs) {
 
     return files
       .map(filename => {
-        let a = path.resolve(dir, filename);
-        if(a in this.cache) {
+        for(let i = 0; i < dirs.length; i++) {
+          let dir = dirs[i];
+          let a = path.resolve(dir, filename);
+          let b = a.replace(/([^/\\]*$)/, '_$1');
 
-          return a;
-        }
+          if(a in this.cache) {
 
-        let b = a.replace(/([^/\\]*$)/, '_$1');
-        if(b in this.cache) {
+            return a;
+          }
 
-          return b;
-        }
+          if(b in this.cache) {
 
-        if(fs.existsSync(a)) {
-          this.cache[a] = DependenciesGraph.createStack();
+            return b;
+          }
 
-          return a;
-        }
+          if(fs.existsSync(a)) {
+            this.cache[a] = DependenciesGraph.createStack();
 
-        if(fs.existsSync(b)) {
-          this.cache[b] = DependenciesGraph.createStack();
+            return a;
+          }
 
-          return b;
+          if(fs.existsSync(b)) {
+            this.cache[b] = DependenciesGraph.createStack();
+
+            return b;
+          }
         }
       }, [])
       ;
