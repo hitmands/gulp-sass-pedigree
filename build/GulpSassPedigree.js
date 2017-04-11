@@ -1,6 +1,6 @@
 /**!
  ** @name gulp-sass-pedigree
- ** @version 1.0.7
+ ** @version 1.1.7
  ** @author Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)
  ** @url https://github.com/hitmands/gulp-sass-pedigree#readme
  ** @description Incremental Caching System for Gulp and NodeSass
@@ -124,10 +124,17 @@ var _DependenciesGraph = __webpack_require__(3);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var graph = new _DependenciesGraph.DependenciesGraph();
+var PLUGIN_NAME = 'gulp-sass-pedigree';
+
+var options = {
+  includePaths: []
+};
 
 function sassPedigreeStudy(file, enc, cb) {
+  graph.options = options;
+
   if (file && !file.isNull()) {
-    void graph.onFileChange(file, file.contents.toString(), file.base);
+    void graph.onFileChange(file, file.contents.toString(), [_path2.default.dirname(file.path), file.base]);
   }
 
   return cb(null, file);
@@ -136,11 +143,13 @@ function sassPedigreeStudy(file, enc, cb) {
 function sassPedigreeGetAncestors(file, enc, cb) {
   var _this = this;
 
+  var start = Date.now();
+
   if (!file || file.isNull()) {
     return cb(null, file);
   }
 
-  void graph.onFileChange(file, file.contents.toString(), file.base);
+  void graph.onFileChange(file, file.contents.toString(), [_path2.default.dirname(file.path), file.base]);
 
   var parents = graph.get(file.path).parents;
 
@@ -155,12 +164,21 @@ function sassPedigreeGetAncestors(file, enc, cb) {
         contents: file.type === 'stream' ? _fs2.default.createReadStream(p) : _fs2.default.readFileSync(p)
       }));
     });
+
+    var stats = {
+      ancestors: ancestors.length,
+      file: file.filename
+    };
+
+    _gulpUtil2.default.log(_gulpUtil2.default.colors.bgYellow(' ' + PLUGIN_NAME + ': ' + JSON.stringify(stats) + ' '), _gulpUtil2.default.colors.magenta(Date.now() - start + ' ms'));
   }
 
   return cb(null, file);
 }
 
-function createPedigree() {
+function createPedigree(_options) {
+  options = Object.assign({}, options, _options);
+
   return _through2.default.obj(sassPedigreeStudy);
 }
 function getAncestors() {
@@ -279,32 +297,36 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
     }
   }, {
     key: 'updateKeys',
-    value: function updateKeys(files, dir) {
+    value: function updateKeys(files, dirs) {
       var _this2 = this;
 
       return files.map(function (filename) {
-        var a = _path2.default.resolve(dir, filename);
-        if (a in _this2.cache) {
+        for (var i = 0; i < dirs.length; i++) {
+          var dir = dirs[i];
+          var a = _path2.default.resolve(dir, filename);
+          var b = a.replace(/([^/\\]*$)/, '_$1');
 
-          return a;
-        }
+          if (a in _this2.cache) {
 
-        var b = a.replace(/(\w+\.scss$)/, '_$1');
-        if (b in _this2.cache) {
+            return a;
+          }
 
-          return b;
-        }
+          if (b in _this2.cache) {
 
-        if (_fs2.default.existsSync(a)) {
-          _this2.cache[a] = DependenciesGraph.createStack();
+            return b;
+          }
 
-          return a;
-        }
+          if (_fs2.default.existsSync(a)) {
+            _this2.cache[a] = DependenciesGraph.createStack();
 
-        if (_fs2.default.existsSync(b)) {
-          _this2.cache[b] = DependenciesGraph.createStack();
+            return a;
+          }
 
-          return b;
+          if (_fs2.default.existsSync(b)) {
+            _this2.cache[b] = DependenciesGraph.createStack();
+
+            return b;
+          }
         }
       }, []);
     }
