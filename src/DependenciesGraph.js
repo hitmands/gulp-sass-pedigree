@@ -78,6 +78,8 @@ export class DependenciesGraph {
     }
   }
 
+
+
   updateKeys(files, dir) {
 
     return files
@@ -88,7 +90,7 @@ export class DependenciesGraph {
           return a;
         }
 
-        let b = a.replace(/(\w+\.scss$)/, '_$1');
+        let b = a.replace(/([^/\\]*$)/, '_$1');
         if(b in this.cache) {
 
           return b;
@@ -105,7 +107,6 @@ export class DependenciesGraph {
 
           return b;
         }
-
       }, [])
       ;
   }

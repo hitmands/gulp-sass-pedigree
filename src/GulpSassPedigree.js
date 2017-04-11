@@ -6,8 +6,16 @@ import gutil from 'gulp-util';
 import {DependenciesGraph} from './DependenciesGraph';
 
 const graph = new DependenciesGraph();
+const PLUGIN_NAME = 'gulp-sass-pedigree';
+
+let options = {
+  includePaths: []
+};
+
 
 function sassPedigreeStudy(file, enc, cb) {
+  graph.options = options;
+
   if(file && !file.isNull()) {
     void graph.onFileChange(
       file,
@@ -21,6 +29,8 @@ function sassPedigreeStudy(file, enc, cb) {
 
 
 function sassPedigreeGetAncestors(file, enc, cb) {
+  let start = Date.now();
+
   if(!file || file.isNull()) {
     return cb(null, file);
   }
@@ -49,12 +59,26 @@ function sassPedigreeGetAncestors(file, enc, cb) {
         );
       })
     ;
+
+    let stats = {
+      ancestors: ancestors.length,
+      file: file.filename
+    };
+
+    gutil.log(
+      gutil.colors.bgYellow(
+        ` ${PLUGIN_NAME}: ${JSON.stringify(stats)} `
+      ),
+      gutil.colors.magenta(`${Date.now() - start} ms`)
+    );
   }
 
   return cb(null, file);
 }
 
-export function createPedigree() {
+export function createPedigree(_options) {
+  options = Object.assign({}, options, _options);
+
   return through.obj(sassPedigreeStudy);
 }
 export function getAncestors() {
