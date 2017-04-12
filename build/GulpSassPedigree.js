@@ -374,7 +374,7 @@ function stripScssImports(textContent) {
   return (
   // TODO: Handle comments //@import ""; or /* @import ""; */
   textContent.match(/(?:@import\s+)([^;]*)/g) || []).reduce(function (res, filename) {
-    return res.concat(filename.replace(/@import/, '').replace(/["']/g, '').trim().split(/,\s*/).map(function (p) {
+    return res.concat(filename.replace(/@import|["'\s]/g, '').split(/,/).map(function (p) {
       return p.replace(/\.scss$/, '') + '.scss';
     }));
   }, []);

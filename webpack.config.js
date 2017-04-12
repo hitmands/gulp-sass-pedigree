@@ -23,7 +23,6 @@ function webpackConfig(env) {
  ** @license ${license}
 ***/
 `;
-
   return {
     target: 'node',
     devtool: 'source-map',
@@ -41,7 +40,7 @@ function webpackConfig(env) {
           test: /\.js$/,
           loader: 'babel-loader',
           options: {
-            presets: ['es2015']
+            presets: [['es2015', {modules: false}]]
           }
         }
       ]

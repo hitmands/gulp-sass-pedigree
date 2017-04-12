@@ -2,3 +2,5 @@ webpack.config.js
 .editorconfig
 .gitignore
 .idea
+coverage
+

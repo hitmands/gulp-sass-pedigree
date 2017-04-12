@@ -5,10 +5,13 @@
   "main": "build/GulpSassPedigree.js",
   "devDependencies": {
     "babel-core": "^6.24.1",
+    "babel-jest": "^19.0.0",
     "babel-loader": "^7.0.0-beta.1",
     "babel-preset-es2015": "^6.24.1",
     "gulp": "^3.9.1",
     "gulp-sass": "^3.1.0",
+    "jest": "^19.0.2",
+    "jest-cli": "^19.0.2",
     "node-sass": "^4.5.2",
     "webpack": "^2.3.3",
     "webpack-node-externals": "^1.5.4"
@@ -18,17 +21,30 @@
     "gulp-util": "latest"
   },
   "scripts": {
-    "webpack" : "webpack --config webpack.config.js"
+    "webpack": "webpack --config webpack.config.js",
+    "test": "jest --coverage"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hitmands/gulp-sass-pedigree.git"
   },
-  "keywords": ["gulpplugin", "sass", "libsass", "gulp", "cache", "incremental cache"],
+  "keywords": [
+    "gulpplugin",
+    "sass",
+    "libsass",
+    "gulp",
+    "cache",
+    "incremental cache"
+  ],
   "author": "Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)",
   "license": "MIT License",
   "bugs": {
     "url": "https://github.com/hitmands/gulp-sass-pedigree/issues"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
   },
   "homepage": "https://github.com/hitmands/gulp-sass-pedigree#readme"
 }

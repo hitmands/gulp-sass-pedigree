@@ -6,10 +6,8 @@ export function stripScssImports(textContent) {
   )
     .reduce((res, filename) => res.concat(
       filename
-        .replace(/@import/, '')
-        .replace(/["']/g, '')
-        .trim()
-        .split(/,\s*/)
+        .replace(/@import|["'\s]/g, '')
+        .split(/,/)
         .map(p => `${p.replace(/\.scss$/, '')}.scss`)
       )
       , [])
