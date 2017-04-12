@@ -1,6 +1,5 @@
 import path from 'path';
-import fs from 'fs';
-import {prune} from './Helpers';
+import {prune, fileExists} from './Helpers';
 import {stripScssImports} from './stripScssImports';
 
 export class DependenciesGraph {
@@ -16,6 +15,18 @@ export class DependenciesGraph {
 
   constructor() {
     this.cache = Object.create(null);
+    this.options = Object.assign(Object.create(null), {
+      fileExists
+    });
+  }
+
+  set options(v) {
+
+    this._options = Object.assign(this._options, v);
+  }
+  get options() {
+
+    return this._options;
   }
 
   get length() {
@@ -25,7 +36,7 @@ export class DependenciesGraph {
 
   get(path) {
 
-    return this.cache[path];
+    return this.cache[path] || null;
   }
 
   ascend(list, res = []) {
@@ -79,7 +90,6 @@ export class DependenciesGraph {
   }
 
 
-
   updateKeys(files, dirs) {
 
     return files
@@ -99,18 +109,20 @@ export class DependenciesGraph {
             return b;
           }
 
-          if(fs.existsSync(a)) {
+          if(this.options.fileExists(a)) {
             this.cache[a] = DependenciesGraph.createStack();
 
             return a;
           }
 
-          if(fs.existsSync(b)) {
+          if(this.options.fileExists(b)) {
             this.cache[b] = DependenciesGraph.createStack();
 
             return b;
           }
         }
+
+
       }, [])
       ;
   }

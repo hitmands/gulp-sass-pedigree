@@ -1,6 +1,6 @@
 {
   "name": "gulp-sass-pedigree",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "Incremental Caching System for Gulp and NodeSass",
   "main": "build/GulpSassPedigree.js",
   "devDependencies": {

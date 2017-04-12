@@ -1,6 +1,6 @@
 /**!
  ** @name gulp-sass-pedigree
- ** @version 1.1.7
+ ** @version 1.1.8
  ** @author Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)
  ** @url https://github.com/hitmands/gulp-sass-pedigree#readme
  ** @description Incremental Caching System for Gulp and NodeSass
@@ -126,15 +126,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var graph = new _DependenciesGraph.DependenciesGraph();
 var PLUGIN_NAME = 'gulp-sass-pedigree';
 
-var options = {
-  includePaths: []
-};
-
 function sassPedigreeStudy(file, enc, cb) {
   graph.options = options;
 
   if (file && !file.isNull()) {
-    void graph.onFileChange(file, file.contents.toString(), [_path2.default.dirname(file.path), file.base]);
+    void graph.onFileChange(file, file.contents.toString(), [_path2.default.dirname(file.path), file.base].concat(graph.options.includePaths));
   }
 
   return cb(null, file);
@@ -177,7 +173,7 @@ function sassPedigreeGetAncestors(file, enc, cb) {
 }
 
 function createPedigree(_options) {
-  options = Object.assign({}, options, _options);
+  graph.options = _options;
 
   return _through2.default.obj(sassPedigreeStudy);
 }
@@ -202,10 +198,6 @@ var _createClass = function () { function defineProperties(target, props) { for 
 var _path = __webpack_require__(1);
 
 var _path2 = _interopRequireDefault(_path);
-
-var _fs = __webpack_require__(0);
-
-var _fs2 = _interopRequireDefault(_fs);
 
 var _Helpers = __webpack_require__(4);
 
@@ -234,13 +226,16 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
     _classCallCheck(this, DependenciesGraph);
 
     this.cache = Object.create(null);
+    this.options = Object.assign(Object.create(null), {
+      fileExists: _Helpers.fileExists
+    });
   }
 
   _createClass(DependenciesGraph, [{
     key: 'get',
     value: function get(path) {
 
-      return this.cache[path];
+      return this.cache[path] || null;
     }
   }, {
     key: 'ascend',
@@ -316,19 +311,29 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
             return b;
           }
 
-          if (_fs2.default.existsSync(a)) {
+          if (_this2.options.fileExists(a)) {
             _this2.cache[a] = DependenciesGraph.createStack();
 
             return a;
           }
 
-          if (_fs2.default.existsSync(b)) {
+          if (_this2.options.fileExists(b)) {
             _this2.cache[b] = DependenciesGraph.createStack();
 
             return b;
           }
         }
       }, []);
+    }
+  }, {
+    key: 'options',
+    set: function set(v) {
+
+      this._options = Object.assign(this._options, v);
+    },
+    get: function get() {
+
+      return this._options;
     }
   }, {
     key: 'length',
@@ -352,10 +357,22 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.prune = prune;
+exports.fileExists = fileExists;
+
+var _fs = __webpack_require__(0);
+
+var _fs2 = _interopRequireDefault(_fs);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function prune(arr) {
   return arr.filter(function (child, i, list) {
     return child && i === list.lastIndexOf(child);
   });
+}
+
+function fileExists(path) {
+  return _fs2.default.existsSync(path);
 }
 
 /***/ }),

@@ -5,12 +5,9 @@ import gutil from 'gulp-util';
 
 import {DependenciesGraph} from './DependenciesGraph';
 
+
 const graph = new DependenciesGraph();
 const PLUGIN_NAME = 'gulp-sass-pedigree';
-
-let options = {
-  includePaths: []
-};
 
 
 function sassPedigreeStudy(file, enc, cb) {
@@ -23,7 +20,7 @@ function sassPedigreeStudy(file, enc, cb) {
       [
         path.dirname(file.path),
         file.base
-      ]
+      ].concat(graph.options.includePaths)
     );
   }
 
@@ -83,7 +80,7 @@ function sassPedigreeGetAncestors(file, enc, cb) {
 }
 
 export function createPedigree(_options) {
-  options = Object.assign({}, options, _options);
+  graph.options = _options;
 
   return through.obj(sassPedigreeStudy);
 }
