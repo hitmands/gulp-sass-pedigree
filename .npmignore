@@ -1,6 +1,11 @@
+.git
+.idea
+coverage
 webpack.config.js
 .editorconfig
 .gitignore
-.idea
-coverage
-
+.babelrc
+.codeclimate.yml
+.travis.yml
+.eslintignore
+.eslintrc
