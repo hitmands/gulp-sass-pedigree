@@ -52,9 +52,9 @@ export class DependenciesGraph {
     let p = list.shift();
     let dep = this.cache[p];
 
-    return dep.parents.length ?
-      this.ascend(list.concat(dep.parents), res) :
-      this.ascend(list, res.concat(p))
+    return dep.parents.length
+      ? this.ascend(list.concat(dep.parents), res)
+      : this.ascend(list, res.concat(p))
       ;
   }
 
@@ -73,19 +73,19 @@ export class DependenciesGraph {
 
   updateParents() {
     for(let k in this.cache) {
-      //noinspection JSUnfilteredForInLoop
+      // noinspection JSUnfilteredForInLoop
       this.cache[k].parents = [];
     }
 
     for(let k in this.cache) {
-      //noinspection JSUnfilteredForInLoop
+      // noinspection JSUnfilteredForInLoop
       this.cache[k]
         .children
         .forEach(file => {
 
-          //noinspection JSUnfilteredForInLoop
+          // noinspection JSUnfilteredForInLoop
           if(!~this.cache[file].parents.indexOf(k)) {
-            //noinspection JSUnfilteredForInLoop
+            // noinspection JSUnfilteredForInLoop
             this.cache[file].parents.push(k);
           }
         })

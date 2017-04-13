@@ -9,13 +9,14 @@ function webpackConfig(env) {
   let pkgName = 'GulpSassPedigree';
   let {
     name, homepage, description, main,
-    license, version, keywords, author
+    license, version, keywords, author, contributors
   } = require('./package.json');
 
   const header = `/**!
  ** @name ${name}
  ** @version ${version}
  ** @author ${author}
+ ** @contributors ${JSON.stringify(contributors)}
  ** @url ${homepage}
  ** @description ${description}
  ** @keywords [${keywords.join(', ')}]
@@ -36,6 +37,15 @@ function webpackConfig(env) {
     },
     module: {
       rules: [
+        {
+          test: /\.js$/,
+          enforce: "pre",
+          loader: 'eslint-loader',
+          options: {
+            failOnError: false,
+            emitWarning: true
+          }
+        },
         {
           test: /\.js$/,
           loader: 'babel-loader',

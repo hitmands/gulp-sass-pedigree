@@ -1,7 +1,8 @@
 /**!
  ** @name gulp-sass-pedigree
- ** @version 1.1.9
+ ** @version 2.0.0
  ** @author Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)
+ ** @contributors ["Luca Volta <luca.volta@gmail.com> (https://github.com/lucavolta)"]
  ** @url https://github.com/hitmands/gulp-sass-pedigree#readme
  ** @description Incremental Caching System for Gulp and NodeSass
  ** @keywords [gulpplugin, sass, libsass, gulp, cache, incremental cache]
@@ -139,7 +140,7 @@ function create() {
           var dir = _path2.default.dirname(file.path);
           var dirs = [dir];
           if (_path2.default.relative(dir, file.base)) {
-            dirs.push(base);
+            dirs.push(file.base);
           }
           void graph.onFileChange(file, file.contents.toString(), dirs.concat(graph.options.includePaths));
         }
@@ -350,14 +351,18 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
     }
   }, {
     key: 'onFileChange',
-    value: function onFileChange(file, content, dirs) {
+    value: function onFileChange(file) {
+      var content = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+      var dirs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+
       var imports = this.updateKeys((0, _stripScssImports.stripScssImports)(content), dirs, file.path);
 
       if (!(file.path in this.cache)) {
         this.cache[file.path] = DependenciesGraph.createStack();
       }
 
-      this.cache[file.path].children = DependenciesGraph.updateChildren(this.cache[file.path].children, imports);
+      var record = this.get(file.path);
+      record.children = DependenciesGraph.updateChildren(null, imports);
 
       void this.updateParents();
     }
@@ -367,17 +372,17 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
       var _this = this;
 
       for (var k in this.cache) {
-        //noinspection JSUnfilteredForInLoop
+        // noinspection JSUnfilteredForInLoop
         this.cache[k].parents = [];
       }
 
       var _loop = function _loop(_k) {
-        //noinspection JSUnfilteredForInLoop
+        // noinspection JSUnfilteredForInLoop
         _this.cache[_k].children.forEach(function (file) {
 
-          //noinspection JSUnfilteredForInLoop
+          // noinspection JSUnfilteredForInLoop
           if (!~_this.cache[file].parents.indexOf(_k)) {
-            //noinspection JSUnfilteredForInLoop
+            // noinspection JSUnfilteredForInLoop
             _this.cache[file].parents.push(_k);
           }
         });

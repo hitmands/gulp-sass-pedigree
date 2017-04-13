@@ -25,7 +25,7 @@ export function create(options = {}) {
           let dir = path.dirname(file.path);
           let dirs = [dir];
           if(path.relative(dir, file.base)) {
-            dirs.push(base)
+            dirs.push(file.base);
           }
           void graph.onFileChange(
             file,
@@ -51,7 +51,7 @@ export function create(options = {}) {
         let dir = path.dirname(file.path);
         let dirs = [dir];
         if(path.relative(dir, file.base)) {
-          dirs.push(file.base)
+          dirs.push(file.base);
         }
         void graph.onFileChange(
           file,
@@ -71,8 +71,8 @@ export function create(options = {}) {
                   cwd: file.cwd,
                   path: p,
                   base: path.dirname(p),
-                  contents: file.type === 'stream' ?
-                    fs.createReadStream(p) : fs.readFileSync(p)
+                  contents: file.type === 'stream'
+                    ? fs.createReadStream(p) : fs.readFileSync(p)
                 })
               );
             })
@@ -84,7 +84,7 @@ export function create(options = {}) {
           ];
 
           if(graph.options.verbose) {
-            info.push(gutil.colors.green(JSON.stringify(ancestors, null, 2)))
+            info.push(gutil.colors.green(JSON.stringify(ancestors, null, 2)));
           }
 
           log('info',

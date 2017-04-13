@@ -13,7 +13,12 @@ Incremental Caching System for Gulp and NodeSass
 
 const gulp = require('gulp');
 const sass = require('gulp-sass');
-const {createPedigree, getAncestors} = require('gulp-sass-pedigree');
+const options = {
+  ext: '.scss', // string (the file extension)
+  verbose: false // boolean,
+  includePaths: [] // string[] (additional paths where to look for files
+};
+const {study, getAncestors} = require('gulp-sass-pedigree')(options);
 
 gulp.task('sass:all', () => {
 
