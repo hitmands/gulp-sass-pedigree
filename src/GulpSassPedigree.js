@@ -8,6 +8,15 @@ import {log} from './Helpers';
 
 export const PLUGIN_NAME = 'gulp-sass-pedigree';
 
+function getFileChangedArgs(graph, file) {
+  let dir = path.dirname(file.path);
+  let dirs = [dir];
+  if(path.relative(dir, file.base)) {
+    dirs.push(file.base);
+  }
+
+  return [file, file.contents.toString(), dirs.concat(graph.options.includePaths)];
+}
 
 export function create(options = {}) {
   const graph = new DependenciesGraph();
@@ -22,15 +31,8 @@ export function create(options = {}) {
       function studyProjectStructure(file, enc, cb) {
 
         if(file && !file.isNull()) {
-          let dir = path.dirname(file.path);
-          let dirs = [dir];
-          if(path.relative(dir, file.base)) {
-            dirs.push(file.base);
-          }
           void graph.onFileChange(
-            file,
-            file.contents.toString(),
-            dirs.concat(graph.options.includePaths)
+            ...getFileChangedArgs(graph, file)
           );
         }
 
@@ -48,15 +50,8 @@ export function create(options = {}) {
           return cb(null, file);
         }
 
-        let dir = path.dirname(file.path);
-        let dirs = [dir];
-        if(path.relative(dir, file.base)) {
-          dirs.push(file.base);
-        }
         void graph.onFileChange(
-          file,
-          file.contents.toString(),
-          dirs
+          ...getFileChangedArgs(graph, file)
         );
 
         let parents = graph.get(file.path).parents;

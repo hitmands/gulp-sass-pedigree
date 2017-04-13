@@ -1,6 +1,6 @@
 /**!
  ** @name gulp-sass-pedigree
- ** @version 2.0.1
+ ** @version 2.0.3
  ** @author Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)
  ** @contributors ["Luca Volta <luca.volta@gmail.com> (https://github.com/lucavolta)"]
  ** @url https://github.com/hitmands/gulp-sass-pedigree#readme
@@ -120,7 +120,19 @@ var _Helpers = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 var PLUGIN_NAME = exports.PLUGIN_NAME = 'gulp-sass-pedigree';
+
+function getFileChangedArgs(graph, file) {
+  var dir = _path2.default.dirname(file.path);
+  var dirs = [dir];
+  if (_path2.default.relative(dir, file.base)) {
+    dirs.push(file.base);
+  }
+
+  return [file, file.contents.toString(), dirs.concat(graph.options.includePaths)];
+}
 
 function create() {
   var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -137,12 +149,7 @@ function create() {
       function studyProjectStructure(file, enc, cb) {
 
         if (file && !file.isNull()) {
-          var dir = _path2.default.dirname(file.path);
-          var dirs = [dir];
-          if (_path2.default.relative(dir, file.base)) {
-            dirs.push(file.base);
-          }
-          void graph.onFileChange(file, file.contents.toString(), dirs.concat(graph.options.includePaths));
+          void graph.onFileChange.apply(graph, _toConsumableArray(getFileChangedArgs(graph, file)));
         }
 
         return cb(null, file);
@@ -160,12 +167,7 @@ function create() {
           return cb(null, file);
         }
 
-        var dir = _path2.default.dirname(file.path);
-        var dirs = [dir];
-        if (_path2.default.relative(dir, file.base)) {
-          dirs.push(file.base);
-        }
-        void graph.onFileChange(file, file.contents.toString(), dirs);
+        void graph.onFileChange.apply(graph, _toConsumableArray(getFileChangedArgs(graph, file)));
 
         var parents = graph.get(file.path).parents;
 
