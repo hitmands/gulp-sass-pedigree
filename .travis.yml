@@ -1,0 +1,20 @@
+language: node_js
+node_js:
+  - "6.3.1"
+
+before_script:
+  - npm install
+
+script:
+  - npm run webpack
+  - npm run test
+
+addons:
+  code_climate:
+    repo_token:
+
+after_script:
+  - cat "coverage/lcov.info" | codeclimate
+
+git:
+  depth: 10
