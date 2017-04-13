@@ -7,11 +7,11 @@ before_script:
 
 script:
   - npm run webpack
-  - npm run test
+  - npm test
 
 addons:
   code_climate:
-    repo_token:
+    repo_token: e20e373d9249e909a75312d7add8f3e75fc427135e1f0adc23d6c29522000142
 
 after_script:
   - cat "coverage/lcov.info" | codeclimate

@@ -1,4 +1,6 @@
 # gulp-sass-pedigree
+[![Build Status](https://travis-ci.org/hitmands/gulp-sass-pedigree.svg?branch=master)](https://travis-ci.org/hitmands/gulp-sass-pedigree) [![Code Climate](https://codeclimate.com/github/hitmands/gulp-sass-pedigree/badges/gpa.svg)](https://codeclimate.com/github/hitmands/gulp-sass-pedigree) [![Test Coverage](https://codeclimate.com/github/hitmands/gulp-sass-pedigree/badges/coverage.svg)](https://codeclimate.com/github/hitmands/gulp-sass-pedigree)
+
 Incremental Caching System for Gulp and NodeSass
 
 ## Where
@@ -24,7 +26,7 @@ gulp.task('sass:all', () => {
 
   return gulp
     .src('path/to/**/*.scss')
-    .pipe(createPedigree())
+    .pipe(study())
     .pipe(sass())
     .pipe(gulp.dest('./dist'))
   ;
