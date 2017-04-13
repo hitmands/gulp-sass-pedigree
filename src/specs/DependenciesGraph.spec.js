@@ -1,6 +1,7 @@
 import {DependenciesGraph} from '../DependenciesGraph';
 import {log} from '../Helpers';
 import path from 'path';
+import gutil from 'gulp-util';
 
 describe('DependenciesGraph', () => {
   let graph;
@@ -149,5 +150,27 @@ describe('DependenciesGraph.updateKeys', () => {
   it('should find b (underscored) in cache', () => {
     FS = ['1.scss', '_2.scss'].map(f => path.resolve(base, f));
     graph.updateKeys(['1.scss', '2.scss'], [base], importer);
+  });
+});
+
+describe('DependenciesGraph.onFileChange', () => {
+  let graph;
+  beforeEach(() => {
+    graph = new DependenciesGraph();
+  });
+
+  it('', () => {
+    let file = new gutil.File({
+      path: path.resolve('foo.scss')
+    });
+
+    spyOn(graph, 'updateKeys').and.returnValue([]);
+    spyOn(DependenciesGraph, 'updateChildren').and.returnValue([]);
+
+    graph.onFileChange(file);
+
+    expect(graph.updateKeys).toHaveBeenCalled();
+    expect(DependenciesGraph.updateChildren).toHaveBeenCalled();
+    expect(graph.get(path.resolve('foo.scss'))).toBeDefined();
   });
 });

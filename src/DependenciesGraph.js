@@ -58,16 +58,15 @@ export class DependenciesGraph {
       ;
   }
 
-  onFileChange(file, content, dirs) {
+  onFileChange(file, content = '', dirs = []) {
     let imports = this.updateKeys(stripScssImports(content), dirs, file.path);
 
     if(!(file.path in this.cache)) {
       this.cache[file.path] = DependenciesGraph.createStack();
     }
 
-    this.cache[file.path].children = DependenciesGraph.updateChildren(
-      this.cache[file.path].children, imports
-    );
+    let record = this.get(file.path);
+    record.children = DependenciesGraph.updateChildren(null, imports);
 
     void this.updateParents();
   }
