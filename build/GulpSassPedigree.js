@@ -1,6 +1,6 @@
 /**!
  ** @name gulp-sass-pedigree
- ** @version 1.1.8
+ ** @version 1.1.9
  ** @author Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)
  ** @url https://github.com/hitmands/gulp-sass-pedigree#readme
  ** @description Incremental Caching System for Gulp and NodeSass
@@ -82,13 +82,121 @@ module.exports =
 /* 0 */
 /***/ (function(module, exports) {
 
-module.exports = require("fs");
+module.exports = require("gulp-util");
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = require("path");
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PLUGIN_NAME = undefined;
+exports.create = create;
+
+var _through = __webpack_require__(7);
+
+var _through2 = _interopRequireDefault(_through);
+
+var _path = __webpack_require__(4);
+
+var _path2 = _interopRequireDefault(_path);
+
+var _fs = __webpack_require__(3);
+
+var _fs2 = _interopRequireDefault(_fs);
+
+var _gulpUtil = __webpack_require__(0);
+
+var _gulpUtil2 = _interopRequireDefault(_gulpUtil);
+
+var _DependenciesGraph = __webpack_require__(5);
+
+var _Helpers = __webpack_require__(2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var PLUGIN_NAME = exports.PLUGIN_NAME = 'gulp-sass-pedigree';
+
+function create() {
+  var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+  var graph = new _DependenciesGraph.DependenciesGraph();
+  graph.options = options;
+  graph.options.verbose = !!graph.options.verbose;
+
+  return {
+    graph: graph,
+
+    study: function study() {
+
+      function studyProjectStructure(file, enc, cb) {
+
+        if (file && !file.isNull()) {
+          var dir = _path2.default.dirname(file.path);
+          var dirs = [dir];
+          if (_path2.default.relative(dir, file.base)) {
+            dirs.push(base);
+          }
+          void graph.onFileChange(file, file.contents.toString(), dirs.concat(graph.options.includePaths));
+        }
+
+        return cb(null, file);
+      }
+
+      return _through2.default.obj(studyProjectStructure);
+    },
+    getAncestors: function getAncestors() {
+      function getAncestorsFromFile(file, enc, cb) {
+        var _this = this;
+
+        var start = Date.now();
+
+        if (!file || file.isNull()) {
+          return cb(null, file);
+        }
+
+        var dir = _path2.default.dirname(file.path);
+        var dirs = [dir];
+        if (_path2.default.relative(dir, file.base)) {
+          dirs.push(file.base);
+        }
+        void graph.onFileChange(file, file.contents.toString(), dirs);
+
+        var parents = graph.get(file.path).parents;
+
+        if (parents.length) {
+          var ancestors = graph.ascend(parents.slice());
+
+          ancestors.forEach(function (p) {
+            _this.push(new _gulpUtil2.default.File({
+              cwd: file.cwd,
+              path: p,
+              base: _path2.default.dirname(p),
+              contents: file.type === 'stream' ? _fs2.default.createReadStream(p) : _fs2.default.readFileSync(p)
+            }));
+          });
+
+          var origin = _gulpUtil2.default.colors.green(JSON.stringify(_path2.default.basename(file.path)));
+          var info = [_gulpUtil2.default.colors.green(ancestors.length) + ' ancestors for ' + origin];
+
+          if (graph.options.verbose) {
+            info.push(_gulpUtil2.default.colors.green(JSON.stringify(ancestors, null, 2)));
+          }
+
+          _Helpers.log.apply(undefined, ['info'].concat(info, [_gulpUtil2.default.colors.magenta(Date.now() - start + ' ms')]));
+        }
+
+        return cb(null, file);
+      }
+
+      return _through2.default.obj(getAncestorsFromFile);
+    }
+  };
+}
 
 /***/ }),
 /* 2 */
@@ -100,89 +208,69 @@ module.exports = require("path");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createPedigree = createPedigree;
-exports.getAncestors = getAncestors;
+exports.prune = prune;
+exports.fileExists = fileExists;
+exports.log = log;
 
-var _through = __webpack_require__(7);
-
-var _through2 = _interopRequireDefault(_through);
-
-var _path = __webpack_require__(1);
-
-var _path2 = _interopRequireDefault(_path);
-
-var _fs = __webpack_require__(0);
-
-var _fs2 = _interopRequireDefault(_fs);
-
-var _gulpUtil = __webpack_require__(6);
+var _gulpUtil = __webpack_require__(0);
 
 var _gulpUtil2 = _interopRequireDefault(_gulpUtil);
 
-var _DependenciesGraph = __webpack_require__(3);
+var _fs = __webpack_require__(3);
+
+var _fs2 = _interopRequireDefault(_fs);
+
+var _GulpSassPedigree = __webpack_require__(1);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var graph = new _DependenciesGraph.DependenciesGraph();
-var PLUGIN_NAME = 'gulp-sass-pedigree';
-
-function sassPedigreeStudy(file, enc, cb) {
-  graph.options = options;
-
-  if (file && !file.isNull()) {
-    void graph.onFileChange(file, file.contents.toString(), [_path2.default.dirname(file.path), file.base].concat(graph.options.includePaths));
-  }
-
-  return cb(null, file);
+function prune(arr) {
+  return arr.filter(function (child, i, list) {
+    return child && i === list.lastIndexOf(child);
+  });
 }
 
-function sassPedigreeGetAncestors(file, enc, cb) {
-  var _this = this;
-
-  var start = Date.now();
-
-  if (!file || file.isNull()) {
-    return cb(null, file);
-  }
-
-  void graph.onFileChange(file, file.contents.toString(), [_path2.default.dirname(file.path), file.base]);
-
-  var parents = graph.get(file.path).parents;
-
-  if (parents.length) {
-    var ancestors = graph.ascend(parents.slice());
-
-    ancestors.forEach(function (p) {
-      _this.push(new _gulpUtil2.default.File({
-        cwd: file.cwd,
-        path: p,
-        base: _path2.default.dirname(p),
-        contents: file.type === 'stream' ? _fs2.default.createReadStream(p) : _fs2.default.readFileSync(p)
-      }));
-    });
-
-    var stats = {
-      ancestors: ancestors.length,
-      file: file.filename
-    };
-
-    _gulpUtil2.default.log(_gulpUtil2.default.colors.bgYellow(' ' + PLUGIN_NAME + ': ' + JSON.stringify(stats) + ' '), _gulpUtil2.default.colors.magenta(Date.now() - start + ' ms'));
-  }
-
-  return cb(null, file);
+function fileExists(path) {
+  return _fs2.default.existsSync(path);
 }
 
-function createPedigree(_options) {
-  graph.options = _options;
+function log(type) {
+  var color = void 0;
 
-  return _through2.default.obj(sassPedigreeStudy);
-}
-function getAncestors() {
-  return _through2.default.obj(sassPedigreeGetAncestors);
+  switch (type) {
+    case 'warn':
+      color = 'yellow';
+      break;
+
+    case 'error':
+      color = 'red';
+      break;
+
+    default:
+      color = 'cyan';
+  }
+
+  for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    args[_key - 1] = arguments[_key];
+  }
+
+  return _gulpUtil2.default.log.apply(_gulpUtil2.default, [_gulpUtil2.default.colors[color](_GulpSassPedigree.PLUGIN_NAME + '::' + type)].concat(args));
 }
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports) {
+
+module.exports = require("fs");
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports) {
+
+module.exports = require("path");
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -195,13 +283,17 @@ exports.DependenciesGraph = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _path = __webpack_require__(1);
+var _path = __webpack_require__(4);
 
 var _path2 = _interopRequireDefault(_path);
 
-var _Helpers = __webpack_require__(4);
+var _gulpUtil = __webpack_require__(0);
 
-var _stripScssImports = __webpack_require__(5);
+var _gulpUtil2 = _interopRequireDefault(_gulpUtil);
+
+var _Helpers = __webpack_require__(2);
+
+var _stripScssImports = __webpack_require__(6);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -226,9 +318,14 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
     _classCallCheck(this, DependenciesGraph);
 
     this.cache = Object.create(null);
-    this.options = Object.assign(Object.create(null), {
-      fileExists: _Helpers.fileExists
+    this._options = Object.assign(Object.create(null), {
+      includePaths: [],
+      ext: '.scss',
+      verbose: false
     });
+
+    this.log = _Helpers.log;
+    this.fileExists = _Helpers.fileExists;
   }
 
   _createClass(DependenciesGraph, [{
@@ -253,10 +350,10 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
     }
   }, {
     key: 'onFileChange',
-    value: function onFileChange(file, content, dir) {
-      var imports = this.updateKeys((0, _stripScssImports.stripScssImports)(content), dir);
+    value: function onFileChange(file, content, dirs) {
+      var imports = this.updateKeys((0, _stripScssImports.stripScssImports)(content), dirs, file.path);
 
-      if (!this.cache[file.path]) {
+      if (!(file.path in this.cache)) {
         this.cache[file.path] = DependenciesGraph.createStack();
       }
 
@@ -292,10 +389,10 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
     }
   }, {
     key: 'updateKeys',
-    value: function updateKeys(files, dirs) {
+    value: function updateKeys(files, dirs, importer) {
       var _this2 = this;
 
-      return files.map(function (filename) {
+      return files.reduce(function (res, filename) {
         for (var i = 0; i < dirs.length; i++) {
           var dir = dirs[i];
           var a = _path2.default.resolve(dir, filename);
@@ -303,33 +400,37 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
 
           if (a in _this2.cache) {
 
-            return a;
+            return res.concat(a);
           }
 
           if (b in _this2.cache) {
 
-            return b;
+            return res.concat(b);
           }
 
-          if (_this2.options.fileExists(a)) {
+          if (_this2.fileExists(a)) {
             _this2.cache[a] = DependenciesGraph.createStack();
 
-            return a;
+            return res.concat(a);
           }
 
-          if (_this2.options.fileExists(b)) {
+          if (_this2.fileExists(b)) {
             _this2.cache[b] = DependenciesGraph.createStack();
 
-            return b;
+            return res.concat(b);
           }
         }
+
+        _this2.log('warn', _gulpUtil2.default.colors.green(JSON.stringify(filename)) + ' not found in ' + _gulpUtil2.default.colors.green(JSON.stringify(dirs, null, 2)) + ' of ' + _gulpUtil2.default.colors.green(JSON.stringify(_path2.default.basename(importer))));
+
+        return res;
       }, []);
     }
   }, {
     key: 'options',
     set: function set(v) {
 
-      this._options = Object.assign(this._options, v);
+      this._options = Object.assign(this._options, v || {});
     },
     get: function get() {
 
@@ -347,36 +448,7 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
 }();
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.prune = prune;
-exports.fileExists = fileExists;
-
-var _fs = __webpack_require__(0);
-
-var _fs2 = _interopRequireDefault(_fs);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function prune(arr) {
-  return arr.filter(function (child, i, list) {
-    return child && i === list.lastIndexOf(child);
-  });
-}
-
-function fileExists(path) {
-  return _fs2.default.existsSync(path);
-}
-
-/***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -398,12 +470,6 @@ function stripScssImports(textContent) {
 }
 
 /***/ }),
-/* 6 */
-/***/ (function(module, exports) {
-
-module.exports = require("gulp-util");
-
-/***/ }),
 /* 7 */
 /***/ (function(module, exports) {
 
@@ -413,7 +479,7 @@ module.exports = require("through2");
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(2);
+module.exports = __webpack_require__(1);
 
 
 /***/ })

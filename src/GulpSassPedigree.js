@@ -4,86 +4,99 @@ import fs from 'fs';
 import gutil from 'gulp-util';
 
 import {DependenciesGraph} from './DependenciesGraph';
+import {log} from './Helpers';
+
+export const PLUGIN_NAME = 'gulp-sass-pedigree';
 
 
-const graph = new DependenciesGraph();
-const PLUGIN_NAME = 'gulp-sass-pedigree';
-
-
-function sassPedigreeStudy(file, enc, cb) {
+export function create(options = {}) {
+  const graph = new DependenciesGraph();
   graph.options = options;
+  graph.options.verbose = !!graph.options.verbose;
 
-  if(file && !file.isNull()) {
-    void graph.onFileChange(
-      file,
-      file.contents.toString(),
-      [
-        path.dirname(file.path),
-        file.base
-      ].concat(graph.options.includePaths)
-    );
-  }
+  return {
+    graph,
 
-  return cb(null, file);
-}
+    study() {
 
+      function studyProjectStructure(file, enc, cb) {
 
-function sassPedigreeGetAncestors(file, enc, cb) {
-  let start = Date.now();
+        if(file && !file.isNull()) {
+          let dir = path.dirname(file.path);
+          let dirs = [dir];
+          if(path.relative(dir, file.base)) {
+            dirs.push(base)
+          }
+          void graph.onFileChange(
+            file,
+            file.contents.toString(),
+            dirs.concat(graph.options.includePaths)
+          );
+        }
 
-  if(!file || file.isNull()) {
-    return cb(null, file);
-  }
+        return cb(null, file);
+      }
 
-  void graph.onFileChange(
-    file,
-    file.contents.toString(),
-    [
-      path.dirname(file.path),
-      file.base
-    ]
-  );
+      return through.obj(studyProjectStructure);
+    },
 
-  let parents = graph.get(file.path).parents;
+    getAncestors() {
+      function getAncestorsFromFile(file, enc, cb) {
+        let start = Date.now();
 
-  if(parents.length) {
-    let ancestors = graph.ascend(parents.slice());
+        if(!file || file.isNull()) {
+          return cb(null, file);
+        }
 
-    ancestors
-      .forEach(p => {
-        this.push(
-          new gutil.File({
-            cwd: file.cwd,
-            path: p,
-            base: path.dirname(p),
-            contents: file.type === 'stream' ?
-              fs.createReadStream(p) : fs.readFileSync(p)
-          })
+        let dir = path.dirname(file.path);
+        let dirs = [dir];
+        if(path.relative(dir, file.base)) {
+          dirs.push(file.base)
+        }
+        void graph.onFileChange(
+          file,
+          file.contents.toString(),
+          dirs
         );
-      })
-    ;
 
-    let stats = {
-      ancestors: ancestors.length,
-      file: file.filename
-    };
+        let parents = graph.get(file.path).parents;
 
-    gutil.log(
-      gutil.colors.bgYellow(
-        ` ${PLUGIN_NAME}: ${JSON.stringify(stats)} `
-      ),
-      gutil.colors.magenta(`${Date.now() - start} ms`)
-    );
-  }
+        if(parents.length) {
+          let ancestors = graph.ascend(parents.slice());
 
-  return cb(null, file);
-}
+          ancestors
+            .forEach(p => {
+              this.push(
+                new gutil.File({
+                  cwd: file.cwd,
+                  path: p,
+                  base: path.dirname(p),
+                  contents: file.type === 'stream' ?
+                    fs.createReadStream(p) : fs.readFileSync(p)
+                })
+              );
+            })
+          ;
 
-export function createPedigree(_options) {
-  graph.options = _options;
+          let origin = gutil.colors.green(JSON.stringify(path.basename(file.path)));
+          let info = [
+            `${gutil.colors.green(ancestors.length)} ancestors for ${origin}`
+          ];
 
-  return through.obj(sassPedigreeStudy);
-}
-export function getAncestors() {
-  return through.obj(sassPedigreeGetAncestors);
+          if(graph.options.verbose) {
+            info.push(gutil.colors.green(JSON.stringify(ancestors, null, 2)))
+          }
+
+          log('info',
+            ...info,
+            gutil.colors.magenta(`${Date.now() - start} ms`)
+          );
+        }
+
+        return cb(null, file);
+      }
+
+      return through.obj(getAncestorsFromFile);
+    }
+  };
 }

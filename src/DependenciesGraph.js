@@ -1,5 +1,6 @@
 import path from 'path';
-import {prune, fileExists} from './Helpers';
+import gutil from 'gulp-util';
+import {prune, fileExists, log as logger} from './Helpers';
 import {stripScssImports} from './stripScssImports';
 
 export class DependenciesGraph {
@@ -15,20 +16,24 @@ export class DependenciesGraph {
 
   constructor() {
     this.cache = Object.create(null);
-    this.options = Object.assign(Object.create(null), {
-      fileExists
+    this._options = Object.assign(Object.create(null), {
+      includePaths: [],
+      ext: '.scss',
+      verbose: false
     });
+
+    this.log = logger;
+    this.fileExists = fileExists;
   }
 
   set options(v) {
 
-    this._options = Object.assign(this._options, v);
+    this._options = Object.assign(this._options, v || {});
   }
   get options() {
 
     return this._options;
   }
-
   get length() {
 
     return Object.keys(this.cache).length;
@@ -53,10 +58,10 @@ export class DependenciesGraph {
       ;
   }
 
-  onFileChange(file, content, dir) {
-    let imports = this.updateKeys(stripScssImports(content), dir);
+  onFileChange(file, content, dirs) {
+    let imports = this.updateKeys(stripScssImports(content), dirs, file.path);
 
-    if(!this.cache[file.path]) {
+    if(!(file.path in this.cache)) {
       this.cache[file.path] = DependenciesGraph.createStack();
     }
 
@@ -90,10 +95,10 @@ export class DependenciesGraph {
   }
 
 
-  updateKeys(files, dirs) {
+  updateKeys(files, dirs, importer) {
 
     return files
-      .map(filename => {
+      .reduce((res, filename) => {
         for(let i = 0; i < dirs.length; i++) {
           let dir = dirs[i];
           let a = path.resolve(dir, filename);
@@ -101,28 +106,39 @@ export class DependenciesGraph {
 
           if(a in this.cache) {
 
-            return a;
+            return res.concat(a);
           }
 
           if(b in this.cache) {
 
-            return b;
+            return res.concat(b);
           }
 
-          if(this.options.fileExists(a)) {
+          if(this.fileExists(a)) {
             this.cache[a] = DependenciesGraph.createStack();
 
-            return a;
+            return res.concat(a);
           }
 
-          if(this.options.fileExists(b)) {
+          if(this.fileExists(b)) {
             this.cache[b] = DependenciesGraph.createStack();
 
-            return b;
+            return res.concat(b);
           }
         }
 
+        this.log(
+          'warn',
+          `${
+            gutil.colors.green(JSON.stringify(filename))
+            } not found in ${
+            gutil.colors.green(JSON.stringify(dirs, null, 2))
+            } of ${
+            gutil.colors.green(JSON.stringify(path.basename(importer)))
+            }`
+        );
 
+        return res;
       }, [])
       ;
   }
