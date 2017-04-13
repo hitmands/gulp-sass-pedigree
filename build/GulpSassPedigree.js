@@ -1,6 +1,6 @@
 /**!
  ** @name gulp-sass-pedigree
- ** @version 2.0.3
+ ** @version 2.0.4
  ** @author Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)
  ** @contributors ["Luca Volta <luca.volta@gmail.com> (https://github.com/lucavolta)"]
  ** @url https://github.com/hitmands/gulp-sass-pedigree#readme
@@ -123,16 +123,19 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var PLUGIN_NAME = exports.PLUGIN_NAME = 'gulp-sass-pedigree';
-
-function getFileChangedArgs(graph, file) {
+var green = function green(msg) {
+  return _gulpUtil2.default.colors.green(msg);
+};
+var getFileChangedArgs = function getFileChangedArgs(graph, file) {
   var dir = _path2.default.dirname(file.path);
   var dirs = [dir];
+
   if (_path2.default.relative(dir, file.base)) {
     dirs.push(file.base);
   }
 
   return [file, file.contents.toString(), dirs.concat(graph.options.includePaths)];
-}
+};
 
 function create() {
   var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -147,7 +150,6 @@ function create() {
     study: function study() {
 
       function studyProjectStructure(file, enc, cb) {
-
         if (file && !file.isNull()) {
           void graph.onFileChange.apply(graph, _toConsumableArray(getFileChangedArgs(graph, file)));
         }
@@ -159,38 +161,44 @@ function create() {
     },
     getAncestors: function getAncestors() {
       function getAncestorsFromFile(file, enc, cb) {
-        var _this = this;
+        if (file && !file.isNull()) {
+          var start = Date.now();
 
-        var start = Date.now();
+          void graph.onFileChange.apply(graph, _toConsumableArray(getFileChangedArgs(graph, file)));
+          var parents = graph.get(file.path).parents;
 
-        if (!file || file.isNull()) {
-          return cb(null, file);
-        }
+          if (parents.length) {
+            var ancestors = void 0;
 
-        void graph.onFileChange.apply(graph, _toConsumableArray(getFileChangedArgs(graph, file)));
+            try {
+              ancestors = graph.ascend(parents.slice());
+            } catch (e) {
 
-        var parents = graph.get(file.path).parents;
+              (0, _Helpers.log)('warn', 'possible circular dependency', e);
+            }
 
-        if (parents.length) {
-          var ancestors = graph.ascend(parents.slice());
+            if (ancestors) {
+              for (var i = 0; i < ancestors.length; i++) {
+                var p = ancestors[i];
 
-          ancestors.forEach(function (p) {
-            _this.push(new _gulpUtil2.default.File({
-              cwd: file.cwd,
-              path: p,
-              base: _path2.default.dirname(p),
-              contents: file.type === 'stream' ? _fs2.default.createReadStream(p) : _fs2.default.readFileSync(p)
-            }));
-          });
+                this.push(
+                /* eslint object-property-newline: 0 */
+                new _gulpUtil2.default.File({
+                  path: p, cwd: file.cwd, base: _path2.default.dirname(p),
+                  contents: file.type === 'stream' ? _fs2.default.createReadStream(p) : _fs2.default.readFileSync(p)
+                }));
+              }
 
-          var origin = _gulpUtil2.default.colors.green(JSON.stringify(_path2.default.basename(file.path)));
-          var info = [_gulpUtil2.default.colors.green(ancestors.length) + ' ancestors for ' + origin];
+              var filename = green(JSON.stringify(_path2.default.basename(file.path)));
+              var info = [green(ancestors.length) + ' ancestors for ' + filename];
 
-          if (graph.options.verbose) {
-            info.push(_gulpUtil2.default.colors.green(JSON.stringify(ancestors, null, 2)));
+              if (graph.options.verbose) {
+                info.push(green(JSON.stringify(ancestors, null, 2)));
+              }
+
+              _Helpers.log.apply(undefined, ['info'].concat(info, [_gulpUtil2.default.colors.magenta(Date.now() - start + ' ms')]));
+            }
           }
-
-          _Helpers.log.apply(undefined, ['info'].concat(info, [_gulpUtil2.default.colors.magenta(Date.now() - start + ' ms')]));
         }
 
         return cb(null, file);

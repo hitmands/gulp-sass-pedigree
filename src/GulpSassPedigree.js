@@ -2,21 +2,23 @@ import through from 'through2';
 import path from 'path';
 import fs from 'fs';
 import gutil from 'gulp-util';
-
 import {DependenciesGraph} from './DependenciesGraph';
 import {log} from './Helpers';
 
 export const PLUGIN_NAME = 'gulp-sass-pedigree';
-
-function getFileChangedArgs(graph, file) {
+const green = msg => gutil.colors.green(msg);
+const getFileChangedArgs = (graph, file) => {
   let dir = path.dirname(file.path);
   let dirs = [dir];
+
   if(path.relative(dir, file.base)) {
     dirs.push(file.base);
   }
 
-  return [file, file.contents.toString(), dirs.concat(graph.options.includePaths)];
-}
+  return [
+    file, file.contents.toString(), dirs.concat(graph.options.includePaths)
+  ];
+};
 
 export function create(options = {}) {
   const graph = new DependenciesGraph();
@@ -29,11 +31,8 @@ export function create(options = {}) {
     study() {
 
       function studyProjectStructure(file, enc, cb) {
-
         if(file && !file.isNull()) {
-          void graph.onFileChange(
-            ...getFileChangedArgs(graph, file)
-          );
+          void graph.onFileChange(...getFileChangedArgs(graph, file));
         }
 
         return cb(null, file);
@@ -44,48 +43,51 @@ export function create(options = {}) {
 
     getAncestors() {
       function getAncestorsFromFile(file, enc, cb) {
-        let start = Date.now();
+        if(file && !file.isNull()) {
+          let start = Date.now();
 
-        if(!file || file.isNull()) {
-          return cb(null, file);
-        }
+          void graph.onFileChange(...getFileChangedArgs(graph, file));
+          let parents = graph.get(file.path).parents;
 
-        void graph.onFileChange(
-          ...getFileChangedArgs(graph, file)
-        );
+          if(parents.length) {
+            let ancestors;
 
-        let parents = graph.get(file.path).parents;
+            try {
+              ancestors = graph.ascend(parents.slice());
+            } catch(e) {
 
-        if(parents.length) {
-          let ancestors = graph.ascend(parents.slice());
+              log('warn', 'possible circular dependency', e);
+            }
 
-          ancestors
-            .forEach(p => {
-              this.push(
-                new gutil.File({
-                  cwd: file.cwd,
-                  path: p,
-                  base: path.dirname(p),
-                  contents: file.type === 'stream'
-                    ? fs.createReadStream(p) : fs.readFileSync(p)
-                })
+            if(ancestors) {
+              for(let i = 0; i < ancestors.length; i++) {
+                let p = ancestors[i];
+
+                this.push(
+                  /* eslint object-property-newline: 0 */
+                  new gutil.File({
+                    path: p, cwd: file.cwd, base: path.dirname(p),
+                    contents: file.type === 'stream'
+                      ? fs.createReadStream(p) : fs.readFileSync(p)
+                  })
+                );
+              }
+
+              let filename = green(JSON.stringify(path.basename(file.path)));
+              let info = [
+                `${green(ancestors.length)} ancestors for ${filename}`
+              ];
+
+              if(graph.options.verbose) {
+                info.push(green(JSON.stringify(ancestors, null, 2)));
+              }
+
+              log('info', ...info,
+                gutil.colors.magenta(`${Date.now() - start} ms`)
               );
-            })
-          ;
+            }
 
-          let origin = gutil.colors.green(JSON.stringify(path.basename(file.path)));
-          let info = [
-            `${gutil.colors.green(ancestors.length)} ancestors for ${origin}`
-          ];
-
-          if(graph.options.verbose) {
-            info.push(gutil.colors.green(JSON.stringify(ancestors, null, 2)));
           }
-
-          log('info',
-            ...info,
-            gutil.colors.magenta(`${Date.now() - start} ms`)
-          );
         }
 
         return cb(null, file);
