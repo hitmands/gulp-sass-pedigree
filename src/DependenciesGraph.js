@@ -87,14 +87,13 @@ export class DependenciesGraph {
 
           for(let j = 0; j < paths.length; j++) {
             let p = paths[j];
-            if(p in this.cache) {
 
+            if(p in this.cache) {
               return res.concat(p);
             }
 
             if(this.fileExists(p)) {
               this.cache[p] = DependenciesGraph.createStack();
-
               return res.concat(p);
             }
           }
@@ -122,7 +121,7 @@ export class DependenciesGraph {
     }
 
     let p = list.shift();
-    let dep = this.cache[p];
+    let dep = this.get(p);
 
     return dep.parents.length
       ? this.ascend(list.concat(dep.parents), res)

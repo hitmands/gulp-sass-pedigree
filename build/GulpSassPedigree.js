@@ -397,14 +397,13 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
 
           for (var j = 0; j < paths.length; j++) {
             var p = paths[j];
-            if (p in _this2.cache) {
 
+            if (p in _this2.cache) {
               return res.concat(p);
             }
 
             if (_this2.fileExists(p)) {
               _this2.cache[p] = DependenciesGraph.createStack();
-
               return res.concat(p);
             }
           }
@@ -425,7 +424,7 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
       }
 
       var p = list.shift();
-      var dep = this.cache[p];
+      var dep = this.get(p);
 
       return dep.parents.length ? this.ascend(list.concat(dep.parents), res) : this.ascend(list, res.concat(p));
     }
