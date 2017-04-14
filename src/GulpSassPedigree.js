@@ -27,22 +27,19 @@ export function create(options = {}) {
 
   return {
     graph,
-
     study() {
 
-      function studyProjectStructure(file, enc, cb) {
+      return through.obj(function studyProjectStructure(file, enc, cb) {
         if(file && !file.isNull()) {
           void graph.onFileChange(...getFileChangedArgs(graph, file));
         }
 
         return cb(null, file);
-      }
-
-      return through.obj(studyProjectStructure);
+      });
     },
-
     getAncestors() {
-      function getAncestorsFromFile(file, enc, cb) {
+
+      return through.obj(function getAncestorsFromFile(file, enc, cb) {
         if(file && !file.isNull()) {
           let start = Date.now();
 
@@ -56,7 +53,11 @@ export function create(options = {}) {
               ancestors = graph.ascend(parents.slice());
             } catch(e) {
 
-              log('warn', 'possible circular dependency', e);
+              log('warn',
+                `possible circular dependency at ${green(file.path)}`);
+              if(graph.options.verbose) {
+                log('error', e);
+              }
             }
 
             if(ancestors) {
@@ -91,9 +92,7 @@ export function create(options = {}) {
         }
 
         return cb(null, file);
-      }
-
-      return through.obj(getAncestorsFromFile);
+      });
     }
   };
 }

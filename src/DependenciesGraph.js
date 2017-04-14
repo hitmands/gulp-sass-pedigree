@@ -8,7 +8,6 @@ export class DependenciesGraph {
 
     return Object.assign(Object.create(null), {children: [], parents: []});
   }
-
   static updateChildren(oldDeps, newDeps) {
 
     return prune([].concat(newDeps));
@@ -26,6 +25,11 @@ export class DependenciesGraph {
     this.fileExists = fileExists;
   }
 
+  get(path) {
+
+    return this.cache[path] || null;
+  }
+
   set options(v) {
 
     this._options = Object.assign(this._options, v || {});
@@ -37,25 +41,6 @@ export class DependenciesGraph {
   get length() {
 
     return Object.keys(this.cache).length;
-  }
-
-  get(path) {
-
-    return this.cache[path] || null;
-  }
-
-  ascend(list, res = []) {
-    if(!list.length) {
-      return prune(res);
-    }
-
-    let p = list.shift();
-    let dep = this.cache[p];
-
-    return dep.parents.length
-      ? this.ascend(list.concat(dep.parents), res)
-      : this.ascend(list, res.concat(p))
-      ;
   }
 
   onFileChange(file, content = '', dirs = []) {
@@ -74,55 +59,44 @@ export class DependenciesGraph {
   updateParents() {
     for(let k in this.cache) {
       // noinspection JSUnfilteredForInLoop
-      this.cache[k].parents = [];
+      this.get(k).parents = [];
     }
 
     for(let k in this.cache) {
       // noinspection JSUnfilteredForInLoop
-      this.cache[k]
+      this
+        .get(k)
         .children
         .forEach(file => {
+          let parents = this.get(file).parents;
 
           // noinspection JSUnfilteredForInLoop
-          if(!~this.cache[file].parents.indexOf(k)) {
-            // noinspection JSUnfilteredForInLoop
-            this.cache[file].parents.push(k);
-          }
+          ~parents.indexOf(k) || parents.push(k);
         })
       ;
     }
   }
-
 
   updateKeys(files, dirs, importer) {
 
     return files
       .reduce((res, filename) => {
         for(let i = 0; i < dirs.length; i++) {
-          let dir = dirs[i];
-          let a = path.resolve(dir, filename);
-          let b = a.replace(/([^/\\]*$)/, '_$1');
+          let a = path.resolve(dirs[i], filename);
+          let paths = [a, a.replace(/([^/\\]*$)/, '_$1')];
 
-          if(a in this.cache) {
+          for(let j = 0; j < paths.length; j++) {
+            let p = paths[j];
+            if(p in this.cache) {
 
-            return res.concat(a);
-          }
+              return res.concat(p);
+            }
 
-          if(b in this.cache) {
+            if(this.fileExists(p)) {
+              this.cache[p] = DependenciesGraph.createStack();
 
-            return res.concat(b);
-          }
-
-          if(this.fileExists(a)) {
-            this.cache[a] = DependenciesGraph.createStack();
-
-            return res.concat(a);
-          }
-
-          if(this.fileExists(b)) {
-            this.cache[b] = DependenciesGraph.createStack();
-
-            return res.concat(b);
+              return res.concat(p);
+            }
           }
         }
 
@@ -139,6 +113,20 @@ export class DependenciesGraph {
 
         return res;
       }, [])
+      ;
+  }
+
+  ascend(list, res = []) {
+    if(!list.length) {
+      return prune(res);
+    }
+
+    let p = list.shift();
+    let dep = this.cache[p];
+
+    return dep.parents.length
+      ? this.ascend(list.concat(dep.parents), res)
+      : this.ascend(list, res.concat(p))
       ;
   }
 }

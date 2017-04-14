@@ -1,6 +1,6 @@
 /**!
  ** @name gulp-sass-pedigree
- ** @version 2.0.4
+ ** @version 2.0.5
  ** @author Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)
  ** @contributors ["Luca Volta <luca.volta@gmail.com> (https://github.com/lucavolta)"]
  ** @url https://github.com/hitmands/gulp-sass-pedigree#readme
@@ -146,21 +146,19 @@ function create() {
 
   return {
     graph: graph,
-
     study: function study() {
 
-      function studyProjectStructure(file, enc, cb) {
+      return _through2.default.obj(function studyProjectStructure(file, enc, cb) {
         if (file && !file.isNull()) {
           void graph.onFileChange.apply(graph, _toConsumableArray(getFileChangedArgs(graph, file)));
         }
 
         return cb(null, file);
-      }
-
-      return _through2.default.obj(studyProjectStructure);
+      });
     },
     getAncestors: function getAncestors() {
-      function getAncestorsFromFile(file, enc, cb) {
+
+      return _through2.default.obj(function getAncestorsFromFile(file, enc, cb) {
         if (file && !file.isNull()) {
           var start = Date.now();
 
@@ -174,7 +172,10 @@ function create() {
               ancestors = graph.ascend(parents.slice());
             } catch (e) {
 
-              (0, _Helpers.log)('warn', 'possible circular dependency', e);
+              (0, _Helpers.log)('warn', 'possible circular dependency at ' + green(file.path));
+              if (graph.options.verbose) {
+                (0, _Helpers.log)('error', e);
+              }
             }
 
             if (ancestors) {
@@ -202,9 +203,7 @@ function create() {
         }
 
         return cb(null, file);
-      }
-
-      return _through2.default.obj(getAncestorsFromFile);
+      });
     }
   };
 }
@@ -346,20 +345,6 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
       return this.cache[path] || null;
     }
   }, {
-    key: 'ascend',
-    value: function ascend(list) {
-      var res = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-
-      if (!list.length) {
-        return (0, _Helpers.prune)(res);
-      }
-
-      var p = list.shift();
-      var dep = this.cache[p];
-
-      return dep.parents.length ? this.ascend(list.concat(dep.parents), res) : this.ascend(list, res.concat(p));
-    }
-  }, {
     key: 'onFileChange',
     value: function onFileChange(file) {
       var content = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
@@ -383,18 +368,16 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
 
       for (var k in this.cache) {
         // noinspection JSUnfilteredForInLoop
-        this.cache[k].parents = [];
+        this.get(k).parents = [];
       }
 
       var _loop = function _loop(_k) {
         // noinspection JSUnfilteredForInLoop
-        _this.cache[_k].children.forEach(function (file) {
+        _this.get(_k).children.forEach(function (file) {
+          var parents = _this.get(file).parents;
 
           // noinspection JSUnfilteredForInLoop
-          if (!~_this.cache[file].parents.indexOf(_k)) {
-            // noinspection JSUnfilteredForInLoop
-            _this.cache[file].parents.push(_k);
-          }
+          ~parents.indexOf(_k) || parents.push(_k);
         });
       };
 
@@ -409,30 +392,21 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
 
       return files.reduce(function (res, filename) {
         for (var i = 0; i < dirs.length; i++) {
-          var dir = dirs[i];
-          var a = _path2.default.resolve(dir, filename);
-          var b = a.replace(/([^/\\]*$)/, '_$1');
+          var a = _path2.default.resolve(dirs[i], filename);
+          var paths = [a, a.replace(/([^/\\]*$)/, '_$1')];
 
-          if (a in _this2.cache) {
+          for (var j = 0; j < paths.length; j++) {
+            var p = paths[j];
+            if (p in _this2.cache) {
 
-            return res.concat(a);
-          }
+              return res.concat(p);
+            }
 
-          if (b in _this2.cache) {
+            if (_this2.fileExists(p)) {
+              _this2.cache[p] = DependenciesGraph.createStack();
 
-            return res.concat(b);
-          }
-
-          if (_this2.fileExists(a)) {
-            _this2.cache[a] = DependenciesGraph.createStack();
-
-            return res.concat(a);
-          }
-
-          if (_this2.fileExists(b)) {
-            _this2.cache[b] = DependenciesGraph.createStack();
-
-            return res.concat(b);
+              return res.concat(p);
+            }
           }
         }
 
@@ -440,6 +414,20 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
 
         return res;
       }, []);
+    }
+  }, {
+    key: 'ascend',
+    value: function ascend(list) {
+      var res = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+
+      if (!list.length) {
+        return (0, _Helpers.prune)(res);
+      }
+
+      var p = list.shift();
+      var dep = this.cache[p];
+
+      return dep.parents.length ? this.ascend(list.concat(dep.parents), res) : this.ascend(list, res.concat(p));
     }
   }, {
     key: 'options',

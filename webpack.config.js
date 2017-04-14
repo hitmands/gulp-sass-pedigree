@@ -31,7 +31,7 @@ function webpackConfig(env) {
       [pkgName]: [`./src/${pkgName}.js`]
     },
     output: {
-      libraryTarget: "commonjs-module",
+      libraryTarget: 'commonjs-module',
       path: path.join(root, 'build'),
       filename: '[name].js'
     },
@@ -39,7 +39,7 @@ function webpackConfig(env) {
       rules: [
         {
           test: /\.js$/,
-          enforce: "pre",
+          enforce: 'pre',
           loader: 'eslint-loader',
           options: {
             failOnError: false,
