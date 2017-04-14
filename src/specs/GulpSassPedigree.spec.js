@@ -1,5 +1,6 @@
 import * as gulpSassPedigree from '../GulpSassPedigree';
 import {DependenciesGraph} from '../DependenciesGraph';
+import * as logger from '../Helpers';
 import path from 'path';
 import gutil from 'gulp-util';
 
@@ -72,19 +73,22 @@ describe('GulpSassPedigree.{study,getAncestors}', () => {
   it('should create a project graph', () => {
     expect(graph.length).toBe(4);
 
-    expect(graph.get(scss[0].path).parents.length).toBe(0);
     expect(graph.get(scss[0].path).children).toContain(scss[1].path);
+    expect(graph.get(scss[0].path).parents.length).toBe(0);
     expect(graph.get(scss[1].path).children).toContain(scss[2].path);
-    expect(graph.get(scss[2].path).children).toContain(scss[3].path);
-
     expect(graph.get(scss[1].path).parents).toContain(scss[0].path);
+    expect(graph.get(scss[2].path).children).toContain(scss[3].path);
     expect(graph.get(scss[2].path).parents).toContain(scss[1].path);
-    expect(graph.get(scss[3].path).parents).toContain(scss[2].path);
     expect(graph.get(scss[3].path).children.length).toBe(0);
+    expect(graph.get(scss[3].path).parents).toContain(scss[2].path);
   });
 
   it('should return a.scss', () => {
-    // let s = pedigree.getAncestors()._transform(scss[3], 'utf-8', () => {});
-    // console.log(scss[3]);
+    let fs = require('fs');
+    spyOn(logger, 'log');
+    spyOn(fs, 'readFileSync').and.returnValue(new Buffer('Something'));
+    pedigree.getAncestors()._transform(scss[3], 'utf-8', () => {});
+
+    expect(fs.readFileSync).toHaveBeenCalledWith(scss[0].path);
   });
 });
