@@ -11,10 +11,11 @@ script:
 
 addons:
   code_climate:
-    repo_token: e20e373d9249e909a75312d7add8f3e75fc427135e1f0adc23d6c29522000142
+    repo_token: $CODECLIMATE_TOKEN
 
 after_script:
-  - cat "coverage/lcov.info" | codeclimate
+  - npm install codeclimate-test-reporter
+  - codeclimate-test-reporter < coverage/lcov.info
 
 git:
   depth: 10

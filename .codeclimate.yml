@@ -12,4 +12,8 @@ engines:
 ratings:
   paths:
   - "src/*.js"
-exclude_paths: []
+exclude_paths:
+  - "src/specs/**/*.*"
+  - "build/**/*.*"
+  - "coverage/**/*.*"
+  - "node_modules/**/*.*"
