@@ -17,3 +17,6 @@ exclude_paths:
   - "build/**/*.*"
   - "coverage/**/*.*"
   - "node_modules/**/*.*"
+  - "webpack.config.js"
+  - "package.json"
+  - "LICENSE"
