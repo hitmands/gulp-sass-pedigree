@@ -310,20 +310,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var DependenciesGraph = exports.DependenciesGraph = function () {
-  _createClass(DependenciesGraph, null, [{
-    key: 'createStack',
-    value: function createStack() {
-
-      return Object.assign(Object.create(null), { children: [], parents: [] });
-    }
-  }, {
-    key: 'updateChildren',
-    value: function updateChildren(oldDeps, newDeps) {
-
-      return (0, _Helpers.prune)([].concat(newDeps));
-    }
-  }]);
-
   function DependenciesGraph() {
     _classCallCheck(this, DependenciesGraph);
 
@@ -345,6 +331,20 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
       return this.cache[path] || null;
     }
   }, {
+    key: 'has',
+    value: function has(path) {
+
+      return path in this.cache;
+    }
+  }, {
+    key: 'set',
+    value: function set(path) {
+      var children = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+      var parents = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+
+      this.cache[path] = Object.assign(Object.create(null), { children: children, parents: parents });
+    }
+  }, {
     key: 'onFileChange',
     value: function onFileChange(file) {
       var content = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
@@ -352,13 +352,8 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
 
       var imports = this.updateKeys((0, _stripScssImports.stripScssImports)(content), dirs, file.path);
 
-      if (!(file.path in this.cache)) {
-        this.cache[file.path] = DependenciesGraph.createStack();
-      }
-
-      var record = this.get(file.path);
-      record.children = DependenciesGraph.updateChildren(null, imports);
-
+      this.has(file.path) || this.set(file.path);
+      this.get(file.path).children = imports;
       void this.updateParents();
     }
   }, {
@@ -398,12 +393,12 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
           for (var j = 0; j < paths.length; j++) {
             var p = paths[j];
 
-            if (p in _this2.cache) {
+            if (_this2.has(p)) {
               return res.concat(p);
             }
 
             if (_this2.fileExists(p)) {
-              _this2.cache[p] = DependenciesGraph.createStack();
+              _this2.set(p);
               return res.concat(p);
             }
           }

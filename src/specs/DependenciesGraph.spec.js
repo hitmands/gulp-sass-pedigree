@@ -57,27 +57,22 @@ describe('DependenciesGraph', () => {
   });
 
   it('should create the initial cache key stack', () => {
-    let stack = DependenciesGraph.createStack();
+    let path = 'foo/baz';
+    graph.set(path);
+    let stack = graph.get(path);
     expect(stack).toEqual(jasmine.any(Object));
     expect(stack.parents).toEqual(jasmine.any(Array));
     expect(stack.children).toEqual(jasmine.any(Array));
   });
 
-  it('updateChildren should not affect the original array', () => {
-    let arr =  [1, 2, 3, 4];
-    let children = DependenciesGraph.updateChildren(null, arr);
-    expect(children).not.toBe(arr);
-    expect(children).toContain(...arr);
-  });
-
   it('updateParents', () => {
     let cache = graph.cache;
 
-    cache.foo = DependenciesGraph.createStack();
-    cache.baz = DependenciesGraph.createStack();
-    cache._1 = DependenciesGraph.createStack();
-    cache._2 = DependenciesGraph.createStack();
-    cache._3 = DependenciesGraph.createStack();
+    graph.set('foo');
+    graph.set('baz');
+    graph.set('_1');
+    graph.set('_2');
+    graph.set('_3');
     expect(graph.length).toBe(5);
 
     cache._1.children.push('_2');
@@ -96,11 +91,11 @@ describe('DependenciesGraph', () => {
   it('ascend should get only first level parents', () => {
     let cache = graph.cache;
 
-    cache.foo = DependenciesGraph.createStack();
-    cache.baz = DependenciesGraph.createStack();
-    cache._1 = DependenciesGraph.createStack();
-    cache._2 = DependenciesGraph.createStack();
-    cache._3 = DependenciesGraph.createStack();
+    graph.set('foo');
+    graph.set('baz');
+    graph.set('_1');
+    graph.set('_2');
+    graph.set('_3');
     expect(graph.length).toBe(5);
 
     cache._1.children.push('_2');
@@ -137,13 +132,13 @@ describe('DependenciesGraph.updateKeys', () => {
 
   it('should find a in cache', () => {
     files = ['1.scss'];
-    graph.cache[path.resolve(base, files[0])] = DependenciesGraph.createStack();
+    graph.set(path.resolve(base, files[0]));
     graph.updateKeys(files, [base], importer);
   });
 
   it('should find b (underscored) in cache', () => {
     files = ['1.scss'];
-    graph.cache[path.resolve(base, `_${files[0]}`)] = DependenciesGraph.createStack();
+    graph.set(path.resolve(base, `_${files[0]}`));
     graph.updateKeys(files, [base], importer);
   });
 
@@ -165,12 +160,10 @@ describe('DependenciesGraph.onFileChange', () => {
     });
 
     spyOn(graph, 'updateKeys').and.returnValue([]);
-    spyOn(DependenciesGraph, 'updateChildren').and.returnValue([]);
 
     graph.onFileChange(file);
 
     expect(graph.updateKeys).toHaveBeenCalled();
-    expect(DependenciesGraph.updateChildren).toHaveBeenCalled();
     expect(graph.get(path.resolve('foo.scss'))).toBeDefined();
   });
 });

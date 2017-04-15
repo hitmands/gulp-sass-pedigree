@@ -4,15 +4,6 @@ import {prune, fileExists, log as logger} from './Helpers';
 import {stripScssImports} from './stripScssImports';
 
 export class DependenciesGraph {
-  static createStack() {
-
-    return Object.assign(Object.create(null), {children: [], parents: []});
-  }
-  static updateChildren(oldDeps, newDeps) {
-
-    return prune([].concat(newDeps));
-  }
-
   constructor() {
     this.cache = Object.create(null);
     this._options = Object.assign(Object.create(null), {
@@ -28,6 +19,13 @@ export class DependenciesGraph {
   get(path) {
 
     return this.cache[path] || null;
+  }
+  has(path) {
+
+    return path in this.cache;
+  }
+  set(path, children = [], parents = []) {
+    this.cache[path] = Object.assign(Object.create(null), {children, parents});
   }
 
   set options(v) {
@@ -46,13 +44,8 @@ export class DependenciesGraph {
   onFileChange(file, content = '', dirs = []) {
     let imports = this.updateKeys(stripScssImports(content), dirs, file.path);
 
-    if(!(file.path in this.cache)) {
-      this.cache[file.path] = DependenciesGraph.createStack();
-    }
-
-    let record = this.get(file.path);
-    record.children = DependenciesGraph.updateChildren(null, imports);
-
+    this.has(file.path) || this.set(file.path);
+    this.get(file.path).children = imports;
     void this.updateParents();
   }
 
@@ -88,12 +81,12 @@ export class DependenciesGraph {
           for(let j = 0; j < paths.length; j++) {
             let p = paths[j];
 
-            if(p in this.cache) {
+            if(this.has(p)) {
               return res.concat(p);
             }
 
             if(this.fileExists(p)) {
-              this.cache[p] = DependenciesGraph.createStack();
+              this.set(p);
               return res.concat(p);
             }
           }
