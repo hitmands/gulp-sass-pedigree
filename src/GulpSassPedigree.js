@@ -3,10 +3,9 @@ import path from 'path';
 import fs from 'fs';
 import gutil from 'gulp-util';
 import {DependenciesGraph} from './DependenciesGraph';
-import {log} from './Helpers';
+import {log, green} from './Helpers';
 
 export const PLUGIN_NAME = 'gulp-sass-pedigree';
-const green = msg => gutil.colors.green(msg);
 const getFileChangedArgs = (graph, file) => {
   let dir = path.dirname(file.path);
   let dirs = [dir];

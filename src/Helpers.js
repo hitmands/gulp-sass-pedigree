@@ -30,3 +30,5 @@ export function log(type, ...args) {
     gutil.colors[color](`${PLUGIN_NAME}::${type}`), ...args
   );
 }
+
+export const green = msg => gutil.colors.green(msg);

@@ -1,6 +1,5 @@
 import path from 'path';
-import gutil from 'gulp-util';
-import {prune, fileExists, log as logger} from './Helpers';
+import {prune, fileExists, green, log as logger} from './Helpers';
 import {stripScssImports} from './stripScssImports';
 
 export class DependenciesGraph {
@@ -92,14 +91,11 @@ export class DependenciesGraph {
           }
         }
 
+        let log = (...args) => green(JSON.stringify(...args));
         this.log(
           'warn',
-          `${
-            gutil.colors.green(JSON.stringify(filename))
-            } not found in ${
-            gutil.colors.green(JSON.stringify(dirs, null, 2))
-            } of ${
-            gutil.colors.green(JSON.stringify(path.basename(importer)))
+          `${log(filename)} not found in ${log(dirs, null, 2)} of ${
+              log(path.basename(importer))
             }`
         );
 
@@ -114,10 +110,10 @@ export class DependenciesGraph {
     }
 
     let p = list.shift();
-    let dep = this.get(p);
+    let parents = this.get(p).parents;
 
-    return dep.parents.length
-      ? this.ascend(list.concat(dep.parents), res)
+    return parents.length
+      ? this.ascend(list.concat(parents), res)
       : this.ascend(list, res.concat(p))
       ;
   }

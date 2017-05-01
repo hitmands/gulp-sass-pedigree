@@ -1,6 +1,6 @@
 /**!
  ** @name gulp-sass-pedigree
- ** @version 2.1.5
+ ** @version 2.1.6
  ** @author Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)
  ** @contributors ["Luca Volta <luca.volta@gmail.com> (https://github.com/lucavolta)"]
  ** @url https://github.com/hitmands/gulp-sass-pedigree#readme
@@ -81,12 +81,6 @@ module.exports =
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports) {
-
-module.exports = require("gulp-util");
-
-/***/ }),
-/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -106,26 +100,23 @@ var _path = __webpack_require__(4);
 
 var _path2 = _interopRequireDefault(_path);
 
-var _fs = __webpack_require__(3);
+var _fs = __webpack_require__(2);
 
 var _fs2 = _interopRequireDefault(_fs);
 
-var _gulpUtil = __webpack_require__(0);
+var _gulpUtil = __webpack_require__(3);
 
 var _gulpUtil2 = _interopRequireDefault(_gulpUtil);
 
 var _DependenciesGraph = __webpack_require__(5);
 
-var _Helpers = __webpack_require__(2);
+var _Helpers = __webpack_require__(1);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var PLUGIN_NAME = exports.PLUGIN_NAME = 'gulp-sass-pedigree';
-var green = function green(msg) {
-  return _gulpUtil2.default.colors.green(msg);
-};
 var getFileChangedArgs = function getFileChangedArgs(graph, file) {
   var dir = _path2.default.dirname(file.path);
   var dirs = [dir];
@@ -172,7 +163,7 @@ function create() {
               ancestors = graph.ascend(parents.slice());
             } catch (e) {
 
-              (0, _Helpers.log)('warn', 'possible circular dependency at ' + green(file.path));
+              (0, _Helpers.log)('warn', 'possible circular dependency at ' + (0, _Helpers.green)(file.path));
               if (graph.options.verbose) {
                 (0, _Helpers.log)('error', e);
               }
@@ -190,11 +181,11 @@ function create() {
                 }));
               }
 
-              var filename = green(JSON.stringify(_path2.default.basename(file.path)));
-              var info = [green(ancestors.length) + ' ancestors for ' + filename];
+              var filename = (0, _Helpers.green)(JSON.stringify(_path2.default.basename(file.path)));
+              var info = [(0, _Helpers.green)(ancestors.length) + ' ancestors for ' + filename];
 
               if (graph.options.verbose) {
-                info.push(green(JSON.stringify(ancestors, null, 2)));
+                info.push((0, _Helpers.green)(JSON.stringify(ancestors, null, 2)));
               }
 
               _Helpers.log.apply(undefined, ['info'].concat(info, [_gulpUtil2.default.colors.magenta(Date.now() - start + ' ms')]));
@@ -209,7 +200,7 @@ function create() {
 }
 
 /***/ }),
-/* 2 */
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -218,19 +209,20 @@ function create() {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.green = undefined;
 exports.prune = prune;
 exports.fileExists = fileExists;
 exports.log = log;
 
-var _gulpUtil = __webpack_require__(0);
+var _gulpUtil = __webpack_require__(3);
 
 var _gulpUtil2 = _interopRequireDefault(_gulpUtil);
 
-var _fs = __webpack_require__(3);
+var _fs = __webpack_require__(2);
 
 var _fs2 = _interopRequireDefault(_fs);
 
-var _GulpSassPedigree = __webpack_require__(1);
+var _GulpSassPedigree = __webpack_require__(0);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -267,11 +259,21 @@ function log(type) {
   return _gulpUtil2.default.log.apply(_gulpUtil2.default, [_gulpUtil2.default.colors[color](_GulpSassPedigree.PLUGIN_NAME + '::' + type)].concat(args));
 }
 
+var green = exports.green = function green(msg) {
+  return _gulpUtil2.default.colors.green(msg);
+};
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+module.exports = require("fs");
+
 /***/ }),
 /* 3 */
 /***/ (function(module, exports) {
 
-module.exports = require("fs");
+module.exports = require("gulp-util");
 
 /***/ }),
 /* 4 */
@@ -297,11 +299,7 @@ var _path = __webpack_require__(4);
 
 var _path2 = _interopRequireDefault(_path);
 
-var _gulpUtil = __webpack_require__(0);
-
-var _gulpUtil2 = _interopRequireDefault(_gulpUtil);
-
-var _Helpers = __webpack_require__(2);
+var _Helpers = __webpack_require__(1);
 
 var _stripScssImports = __webpack_require__(6);
 
@@ -404,7 +402,10 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
           }
         }
 
-        _this2.log('warn', _gulpUtil2.default.colors.green(JSON.stringify(filename)) + ' not found in ' + _gulpUtil2.default.colors.green(JSON.stringify(dirs, null, 2)) + ' of ' + _gulpUtil2.default.colors.green(JSON.stringify(_path2.default.basename(importer))));
+        var log = function log() {
+          return (0, _Helpers.green)(JSON.stringify.apply(JSON, arguments));
+        };
+        _this2.log('warn', log(filename) + ' not found in ' + log(dirs, null, 2) + ' of ' + log(_path2.default.basename(importer)));
 
         return res;
       }, []);
@@ -419,9 +420,9 @@ var DependenciesGraph = exports.DependenciesGraph = function () {
       }
 
       var p = list.shift();
-      var dep = this.get(p);
+      var parents = this.get(p).parents;
 
-      return dep.parents.length ? this.ascend(list.concat(dep.parents), res) : this.ascend(list, res.concat(p));
+      return parents.length ? this.ascend(list.concat(parents), res) : this.ascend(list, res.concat(p));
     }
   }, {
     key: 'options',
@@ -476,7 +477,7 @@ module.exports = require("through2");
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(1);
+module.exports = __webpack_require__(0);
 
 
 /***/ })
