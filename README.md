@@ -10,11 +10,11 @@ Incremental Caching System for Gulp and NodeSass
 ## Info
 There are a lot of community-based solutions which face the issue regarding the gulp incremental building ([`gulp-progeny`](https://github.com/HerringtonDarkholme/gulp-progeny/) is definitely one of these). Because of its agnostic nature, gulp cannot know the related files to the one edited, and, because of this, it needs to *resync* all the sources with their corresponding outputs `gulp.src('src/**/*.scss').pipe(gulp.dest('./dest'))`.
 
-#### Why choosing `gulp-sass-progeny`?
+#### Why choosing `gulp-sass-pedigree`?
 Because it is specifically designed on top of [`gulp`](http://gulpjs.com/) and [`node-sass`](https://github.com/sass/node-sass), it isn't thought to be agnostic and work with different file types (as `gulp-progeny` is). For example, while editing a parent, you don't need to add any *imported file* to the stream because that is how sass works, otherwise, **you need to add any parent while editing a child and that is what `gulp-sass-pedigree` exactly does**. 
 
 #### Features
-  - No unnecessary file system access (`fs.existsSync` only)
+  - No unnecessary file system access (`fs.existsSync only)
   - Multiple inline imports `@import "foo", "baz", "foobaz";`
   - Nested imports `.foo { @import "baz"; }` and `.foobaz { @import "foo"; }`
   - Top files only (eg: if `a => b => c` while editing `c`, only `a` will be added to the stream)
