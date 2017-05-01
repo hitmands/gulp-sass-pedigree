@@ -1,6 +1,6 @@
 /**!
  ** @name gulp-sass-pedigree
- ** @version 2.0.5
+ ** @version 2.1.5
  ** @author Giuseppe Mandato <gius.mand.developer@gmail.com> (https://github.com/hitmands)
  ** @contributors ["Luca Volta <luca.volta@gmail.com> (https://github.com/lucavolta)"]
  ** @url https://github.com/hitmands/gulp-sass-pedigree#readme
