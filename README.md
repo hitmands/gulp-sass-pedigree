@@ -1,5 +1,9 @@
 # gulp-sass-pedigree
-[![Build Status](https://travis-ci.org/hitmands/gulp-sass-pedigree.svg?branch=master)](https://travis-ci.org/hitmands/gulp-sass-pedigree) [![Code Climate](https://codeclimate.com/github/hitmands/gulp-sass-pedigree/badges/gpa.svg)](https://codeclimate.com/github/hitmands/gulp-sass-pedigree) [![Test Coverage](https://codeclimate.com/github/hitmands/gulp-sass-pedigree/badges/coverage.svg)](https://codeclimate.com/github/hitmands/gulp-sass-pedigree)
+[![Build Status](https://travis-ci.org/hitmands/gulp-sass-pedigree.svg?branch=master)](https://travis-ci.org/hitmands/gulp-sass-pedigree) 
+[![Code Climate](https://codeclimate.com/github/hitmands/gulp-sass-pedigree/badges/gpa.svg)](https://codeclimate.com/github/hitmands/gulp-sass-pedigree) 
+[![Test Coverage](https://codeclimate.com/github/hitmands/gulp-sass-pedigree/badges/coverage.svg)](https://codeclimate.com/github/hitmands/gulp-sass-pedigree)
+![Downloads](https://img.shields.io/npm/dt/gulp-sass-pedigree.svg)
+![Version](https://img.shields.io/npm/v/gulp-sass-pedigree.svg)
 
 Incremental Caching System for Gulp and NodeSass
 
